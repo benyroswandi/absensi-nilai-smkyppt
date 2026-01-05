@@ -105,7 +105,7 @@ def halaman_input():
     with st.container(border=True):
         col_tgl, col_bln = st.columns(2)
         with col_tgl:
-            tgl = st.date_input("📅 Pilih Tanggal", datetime.now(), key="tgl_absen")
+            tgl = st.date_input("📅 Pilih Tanggal", datetime.now().strftime("%d-%m-%Y"), key="tgl_absen")
         with col_bln:
             bulan = st.selectbox("🌙 Bulan", ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'])
     
@@ -124,7 +124,7 @@ def halaman_input():
             for d in list_data:
                 v_nil = d['nil'] if d['stat'] == "Hadir" else 0
                 curr.execute("INSERT OR REPLACE INTO rekap (id_siswa, tanggal, bulan, absensi, nilai, status) VALUES (?,?,?,?,?,?)", 
-                             (d['id'], tgl.strftime('%Y-%m-%d'), bulan, d['stat'], v_nil, d['stat']))
+                             (d['id'], tgl.strftime('%d-%m-%Y'), bulan, d['stat'], v_nil, d['stat']))
             conn.commit()
             conn.close()
             st.success("Berhasil!")
@@ -308,6 +308,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
