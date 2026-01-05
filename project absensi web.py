@@ -3,7 +3,7 @@ import sqlite3
 import pandas as pd
 from datetime import datetime
 import time
-from fpdf import fpdf
+from fpdf import FPDF
 import streamlit.components.v1 as components
 
 # --- KONFIGURASI DATABASE ---
@@ -320,3 +320,4 @@ def main():
 if __name__ == "__main__":
 
     main()
+
