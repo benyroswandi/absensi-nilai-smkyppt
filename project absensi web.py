@@ -245,7 +245,7 @@ def main():
                         conn.execute("UPDATE rekap SET absensi=?, nilai=? WHERE rowid=?", (r['absensi'], r['nilai'], r['rowid']))
                     conn.commit(); conn.close()
                     st.rerun()
-                pdf = export_to_pdf(edited, "Laporan")
+                pdf = export_to_FPDF(edited, "Laporan")
                 c2.download_button("📄 Expor ke PDF", pdf, "Laporan.pdf", width='stretch')
             else:
                 st.info("Data kosong")
@@ -318,6 +318,6 @@ def main():
             st.info("Menu Kelola Siswa di sini.")
 
 if __name__ == "__main__":
-
     main()
+
 
