@@ -92,7 +92,7 @@ def halaman_login():
 
 def halaman_input():
     st.markdown("<h2 style='text-align: center; color: white;'>📝 INPUT KEGIATAN SISWA</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #FFD700;'>Program Keahlian: T DKV - SMK YPPT Garut</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #FFD700;'>Program Keahlian: T. Mekatronika - SMK YPPT Garut</p>", unsafe_allow_html=True)
     
     conn = sqlite3.connect(NAMA_DB)
     df_siswa = pd.read_sql_query("SELECT * FROM siswa ORDER BY nama ASC", conn)
@@ -308,6 +308,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
