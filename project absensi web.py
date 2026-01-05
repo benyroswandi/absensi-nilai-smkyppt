@@ -1,3 +1,4 @@
+import io
 import streamlit as st
 import sqlite3
 import pandas as pd
@@ -19,29 +20,12 @@ def init_db():
     conn.commit()
     conn.close()
 
-def export_to_pdf(df, judul):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", 'B', 16)
-    pdf.cell(190, 10, "LAPORAN SMK YPPT GARUT", ln=True, align='C')
-    pdf.set_font("Arial", '', 12)
-    pdf.cell(190, 7, f"Data: {judul}", ln=True, align='C')
-    pdf.ln(10)
-    pdf.set_font("Arial", 'B', 10)
-    pdf.set_fill_color(200, 200, 200)
+def export_to_excel(df):
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Laporan')
+    return output.getvalue()
     
-    cols_to_print = ["tanggal", "nama", "kelas", "prodi", "absensi", "nilai"]
-    for col in cols_to_print:
-        pdf.cell(31, 10, str(col).upper(), 1, 0, 'C', True)
-    pdf.ln()
-    
-    pdf.set_font("Arial", '', 9)
-    for _, row in df.iterrows():
-        for col in cols_to_print:
-            pdf.cell(31, 10, str(row[col]), 1, 0, 'C')
-        pdf.ln()
-    return pdf.output()
-
 def apply_custom_style():
     st.markdown("""
         <style>
@@ -245,8 +229,14 @@ def main():
                         conn.execute("UPDATE rekap SET absensi=?, nilai=? WHERE rowid=?", (r['absensi'], r['nilai'], r['rowid']))
                     conn.commit(); conn.close()
                     st.rerun()
-                pdf = export_to_pdf(edited, "Laporan")
-                c2.download_button("Expor ke PDF", pdf, "Laporan.pdf", width='stretch')
+                excel_data = export_to_excel(edited)
+                c2.download_button(
+                    label="📥 Ekspor ke Excel",
+                    data=excel_data,
+                    file_name="Laporan_SMK_YPPT.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    width='stretch'
+                )
             else:
                 st.info("Data kosong")
 
@@ -319,6 +309,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
