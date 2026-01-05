@@ -40,7 +40,7 @@ def export_to_pdf(df, judul):
         for col in cols_to_print:
             pdf.cell(31, 10, str(row[col]), 1, 0, 'C')
         pdf.ln()
-    return pdf.output(dest='S').encode('latin-1')
+    return pdf.output
 
 def apply_custom_style():
     st.markdown("""
@@ -319,6 +319,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
