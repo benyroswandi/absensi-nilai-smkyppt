@@ -23,7 +23,7 @@ def main():
         }
         /* Merapatkan baris di Header Login */
         .header-text {
-            line-height: 1.2;
+            line-height: 1;
             margin-bottom: 20px;
         }
         /* Percantik Tombol */
@@ -202,6 +202,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
