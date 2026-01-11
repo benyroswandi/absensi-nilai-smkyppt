@@ -88,16 +88,12 @@ def main():
     elif menu == "Monitoring":
         st.header("📊 Hasil Absensi & Edit Data")
         df_rekap = get_data("rekap")
-        
         if not df_rekap.empty:
-            # 1. DOWNLOAD & FILTER
             col_d1, col_d2 = st.columns([3, 1])
             with col_d1:
                 prodi_list = ["Semua"] + sorted(df_rekap['prodi'].unique().tolist())
                 pilihan = st.selectbox("Filter Tampilan Prodi:", prodi_list)
-            
             df_tampil = df_rekap if pilihan == "Semua" else df_rekap[df_rekap['prodi'] == pilihan]
-            
             with col_d2:
                 buffer = io.BytesIO()
                 with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
@@ -105,40 +101,51 @@ def main():
                 st.download_button(label="📥 Download", data=buffer.getvalue(), 
                                    file_name=f"rekap_{datetime.now().strftime('%Y%m%d')}.xlsx",
                                    mime="application/vnd.ms-excel")
-
             st.divider()
-            
-            # 2. FITUR EDIT (Data Editor)
             st.subheader("📝 Mode Edit Data")
-            st.caption("Tips: Klik langsung pada kolom 'absensi' atau 'nilai' untuk mengubah data, lalu klik tombol SIMPAN di bawah.")
-            
-            # Menggunakan st.data_editor agar tabel bisa diketik langsung
             df_edited = st.data_editor(df_rekap, use_container_width=True, num_rows="dynamic")
-            
             if st.button("💾 SIMPAN PERUBAHAN EDIT", type="primary", use_container_width=True):
-                with st.spinner("Memperbarui data di Google Sheets..."):
+                with st.spinner("Memperbarui data..."):
                     conn.update(spreadsheet=URL_SHEET, worksheet="rekap", data=df_edited)
                     st.success("Perubahan data berhasil disimpan!")
                     st.rerun()
-
         else:
             st.info("Belum ada data rekap.")
 
     elif menu == "Kelola Siswa":
         st.header("👥 Kelola Siswa")
         df_siswa = get_data("siswa")
-        with st.form("tambah_siswa"):
-            nis = st.text_input("NIS Siswa")
-            n = st.text_input("Nama Siswa")
-            k = st.selectbox("Kelas", ["X", "XI", "XII"])
-            p = st.text_input("Prodi", value="T. DKV")
-            if st.form_submit_button("Simpan Siswa"):
-                df_baru = pd.DataFrame([[nis, n, k, p]], columns=["nis", "nama", "kelas", "prodi"])
-                df_final = pd.concat([df_siswa, df_baru], ignore_index=True)
-                conn.update(spreadsheet=URL_SHEET, worksheet="siswa", data=df_final)
-                st.success("Siswa Berhasil Ditambah!")
-                st.rerun()
-        st.dataframe(df_siswa, use_container_width=True)
+        
+        # --- Form Tambah Siswa ---
+        with st.expander("➕ Tambah Siswa Baru"):
+            with st.form("tambah_siswa"):
+                nis = st.text_input("NIS Siswa")
+                n = st.text_input("Nama Siswa")
+                k = st.selectbox("Kelas", ["X", "XI", "XII"])
+                p = st.text_input("Prodi", value="T. DKV")
+                if st.form_submit_button("Simpan Siswa"):
+                    df_baru = pd.DataFrame([[nis, n, k, p]], columns=["nis", "nama", "kelas", "prodi"])
+                    df_final = pd.concat([df_siswa, df_baru], ignore_index=True)
+                    conn.update(spreadsheet=URL_SHEET, worksheet="siswa", data=df_final)
+                    st.success("Siswa Berhasil Ditambah!")
+                    st.rerun()
+
+        st.divider()
+        st.subheader("📋 Daftar & Hapus Siswa")
+        
+        if not df_siswa.empty:
+            for i, row in df_siswa.iterrows():
+                c1, c2, c3, c4 = st.columns([2, 5, 2, 2])
+                c1.write(f"`{row['nis']}`")
+                c2.write(f"**{row['nama']}** ({row['prodi']})")
+                if c4.button("🗑️ Hapus", key=f"del_{i}"):
+                    # Proses Hapus
+                    df_siswa_baru = df_siswa.drop(i)
+                    conn.update(spreadsheet=URL_SHEET, worksheet="siswa", data=df_siswa_baru)
+                    st.success(f"Siswa {row['nama']} berhasil dihapus!")
+                    st.rerun()
+        else:
+            st.info("Belum ada data siswa.")
 
 if __name__ == "__main__":
     main()
