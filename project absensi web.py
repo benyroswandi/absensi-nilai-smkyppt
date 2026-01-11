@@ -17,9 +17,9 @@ def main():
             return conn.read(spreadsheet=URL_SHEET, worksheet=nama_sheet, ttl=0)
         except:
             if nama_sheet == "siswa":
-                return pd.DataFrame(columns=["nama", "kelas", "prodi"])
+                return pd.DataFrame(columns=["nis", "nama", "kelas", "prodi"])
             else:
-                return pd.DataFrame(columns=["nama_siswa", "tanggal", "bulan", "absensi", "nilai", "status", "prodi"])
+                return pd.DataFrame(columns=["nis", "nama_siswa", "tanggal", "bulan", "absensi", "nilai", "status", "prodi"])
 
     if "authenticated" not in st.session_state:
         st.session_state["authenticated"] = False
@@ -59,46 +59,52 @@ def main():
                 tgl = st.date_input("Tanggal Pelaksanaan", datetime.now())
             
             st.info(f"Menampilkan {len(df_filtered)} siswa untuk Prodi: {prodi_terpilih}")
+            
+            st.divider()
+            # Header Tabel dengan NIS
+            h1, h2, h3, h4 = st.columns([1.5, 3, 4, 2])
+            h1.markdown("**NIS**")
+            h2.markdown("**Nama Siswa**")
+            h3.markdown("**Status Kehadiran**")
+            h4.markdown("**Nilai**")
             st.divider()
 
             list_input = []
             for i, row in df_filtered.iterrows():
-                c1, c2, c3 = st.columns([3, 4, 2])
-                c1.write(f"**{row['nama']}**")
-                stat = c2.radio(f"Status_{i}", ["Hadir", "Sakit", "Izin", "Alpa"], horizontal=True, key=f"rad_{i}")
-                nil = c3.number_input(f"Nilai_{i}", 0, 100, 0, key=f"num_{i}")
-                list_input.append([row['nama'], tgl.strftime('%Y-%m-%d'), tgl.strftime('%B'), stat, nil, stat, row['prodi']])
+                c1, c2, c3, c4 = st.columns([1.5, 3, 4, 2])
+                c1.write(f"`{row['nis']}`") # Menampilkan NIS dengan format kode kecil
+                c2.write(f"**{row['nama']}**")
+                stat = c3.radio(f"Status_{i}", ["Hadir", "Sakit", "Izin", "Alpa"], horizontal=True, key=f"rad_{i}", label_visibility="collapsed")
+                nil = c4.number_input(f"Nilai_{i}", 0, 100, 0, key=f"num_{i}", label_visibility="collapsed")
+                # NIS ikut dimasukkan ke rekap
+                list_input.append([row['nis'], row['nama'], tgl.strftime('%Y-%m-%d'), tgl.strftime('%B'), stat, nil, stat, row['prodi']])
 
+            st.divider()
             if st.button("SIMPAN SEMUA DATA PRODI INI", type="primary", use_container_width=True):
-                df_rekap_baru = pd.DataFrame(list_input, columns=["nama_siswa", "tanggal", "bulan", "absensi", "nilai", "status", "prodi"])
-                df_rekap_lama = get_data("rekap")
-                df_final = pd.concat([df_rekap_lama, df_rekap_baru], ignore_index=True)
-                conn.update(spreadsheet=URL_SHEET, worksheet="rekap", data=df_final)
-                st.success("Data Berhasil Disimpan!")
+                with st.spinner("Menyimpan ke database..."):
+                    df_rekap_baru = pd.DataFrame(list_input, columns=["nis", "nama_siswa", "tanggal", "bulan", "absensi", "nilai", "status", "prodi"])
+                    df_rekap_lama = get_data("rekap")
+                    df_final = pd.concat([df_rekap_lama, df_rekap_baru], ignore_index=True)
+                    conn.update(spreadsheet=URL_SHEET, worksheet="rekap", data=df_final)
+                    st.success(f"Alhamdulillah! Data {len(list_input)} siswa sudah masuk rekap.")
 
     elif menu == "Monitoring":
         st.header("📊 Hasil Absensi & Download")
         df_rekap = get_data("rekap")
         
         if not df_rekap.empty:
-            # Filter tampilan
             prodi_list = ["Semua"] + sorted(df_rekap['prodi'].unique().tolist())
             pilihan = st.selectbox("Filter Tampilan Prodi:", prodi_list)
             
             df_tampil = df_rekap if pilihan == "Semua" else df_rekap[df_rekap['prodi'] == pilihan]
             
-            # Tombol Download Excel
             buffer = io.BytesIO()
             with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
                 df_tampil.to_excel(writer, index=False, sheet_name='Rekap_Absensi')
             
-            st.download_button(
-                label="📥 Download Rekap (Excel)",
-                data=buffer.getvalue(),
-                file_name=f"rekap_absensi_{pilihan}_{datetime.now().strftime('%Y%m%d')}.xlsx",
-                mime="application/vnd.ms-excel",
-                use_container_width=True
-            )
+            st.download_button(label="📥 Download Rekap (Excel)", data=buffer.getvalue(), 
+                               file_name=f"rekap_{pilihan}_{datetime.now().strftime('%Y%m%d')}.xlsx",
+                               mime="application/vnd.ms-excel", use_container_width=True)
             
             st.dataframe(df_tampil, use_container_width=True)
         else:
@@ -108,11 +114,12 @@ def main():
         st.header("👥 Kelola Siswa")
         df_siswa = get_data("siswa")
         with st.form("tambah_siswa"):
+            nis = st.text_input("NIS Siswa") # Tambah input NIS
             n = st.text_input("Nama Siswa")
             k = st.selectbox("Kelas", ["X", "XI", "XII"])
             p = st.text_input("Prodi", value="T. DKV")
             if st.form_submit_button("Simpan Siswa"):
-                df_baru = pd.DataFrame([[n, k, p]], columns=["nama", "kelas", "prodi"])
+                df_baru = pd.DataFrame([[nis, n, k, p]], columns=["nis", "nama", "kelas", "prodi"])
                 df_final = pd.concat([df_siswa, df_baru], ignore_index=True)
                 conn.update(spreadsheet=URL_SHEET, worksheet="siswa", data=df_final)
                 st.success("Siswa Berhasil Ditambah!")
