@@ -62,7 +62,7 @@ def main():
         st.session_state["authenticated"] = False
 
     if not st.session_state["authenticated"]:
-        empty_col1, center_col, empty_col2 = st.columns([1, 1.2, 1])
+        empty_col1, center_col, empty_col2 = st.columns([1, 1, 1])
         
         with center_col:
             st.markdown("<br><br>", unsafe_allow_html=True) 
@@ -202,5 +202,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
