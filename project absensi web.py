@@ -6,7 +6,8 @@ import time
 
 # --- KONFIGURASI GOOGLE SHEETS ---
 # GANTI LINK DI BAWAH INI DENGAN LINK GOOGLE SHEETS ABAH
-URL_SHEET = "https://docs.google.com/spreadsheets/d/1__d7A0qCxtkxnJT8oYXbmZfY1GAiFcyB600fBNQaJV8/edit?usp=sharing"
+# Hapus yang lama, ganti dengan ini:
+URL_SHEET = "https://docs.google.com/spreadsheets/d/1__d7A0qCxtkxnJT8oYXbmZfY1GAiFcyB600fBNQaJV8/export?format=csv&gid=0"
 
 def main():
     st.set_page_config(page_title="SMK YPPT Absensi Online", layout="wide")
@@ -97,6 +98,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
