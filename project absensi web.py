@@ -30,7 +30,7 @@ def main():
         .stButton>button {
             border-radius: 10px;
             font-weight: bold;
-            background-color: #007bff;
+            background-color: ##ef4444;
             color: white;
             height: 3em;
             transition: 0.3s;
@@ -202,6 +202,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
