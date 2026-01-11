@@ -22,9 +22,15 @@ def main():
             return pd.DataFrame(columns=["nama", "kelas", "prodi"])
 
     def simpan_rekap(df_baru):
-        df_lama = conn.read(spreadsheet=URL_SHEET, worksheet="rekap")
-        df_combined = pd.concat([df_lama, df_baru], ignore_index=True)
-        conn.update(spreadsheet=URL_SHEET, worksheet="rekap", data=df_combined)
+        try:
+            # Menggunakan ttl=0 agar selalu mengambil data terbaru sebelum update
+            df_lama = conn.read(spreadsheet=URL_SHEET, worksheet="rekap", ttl=0)
+            df_combined = pd.concat([df_lama, df_baru], ignore_index=True)
+            conn.update(spreadsheet=URL_SHEET, worksheet="rekap", data=df_combined)
+            return True
+        except Exception as e:
+            st.error(f"Gagal Simpan Rekap: {e}")
+            return False
 
     # --- LOGIN ADMIN ---
     if "authenticated" not in st.session_state:
@@ -100,10 +106,21 @@ def main():
                     conn.update(spreadsheet=URL_SHEET, worksheet="siswa", data=df_final)
                     st.success("Siswa berhasil ditambah!")
                     st.rerun()
+                # ... di bagian menu Kelola Siswa, pastikan baris update-nya seperti ini:
+            if st.form_submit_button("Simpan"):
+                df_baru = pd.DataFrame([[n, k, p]], columns=["nama", "kelas", "prodi"])
+                df_final = pd.concat([df_siswa, df_baru], ignore_index=True)
+                try:
+                    conn.update(spreadsheet=URL_SHEET, worksheet="siswa", data=df_final)
+                    st.success("Siswa berhasil ditambah!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Gagal Tambah Siswa: {e}")
         
         st.subheader("Daftar Siswa Saat Ini")
         st.dataframe(df_siswa, use_container_width=True)
 
 if __name__ == "__main__":
     main()
+
 
