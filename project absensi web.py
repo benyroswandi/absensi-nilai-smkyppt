@@ -8,8 +8,38 @@ import io
 URL_SHEET = "https://docs.google.com/spreadsheets/d/1__d7A0qCxtkxnJT8oYXbmZfY1GAiFcyB600fBNQaJV8/edit?usp=sharing"
 
 def main():
-    st.set_page_config(page_title="SMK YPPT Absensi Online", layout="wide")
+    st.set_page_config(page_title="SMK YPPT Absensi Online", layout="wide", page_icon="🎓")
     
+    # --- CSS UNTUK PERCANTIK TAMPILAN ---
+    st.markdown("""
+        <style>
+        /* Desain Box Login */
+        .login-box {
+            background-color: #f0f2f6;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
+        }
+        /* Percantik Tombol */
+        .stButton>button {
+            border-radius: 20px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .stButton>button:hover {
+            transform: scale(1.02);
+            border-color: #007bff;
+        }
+        /* Sidebar Styling */
+        [data-testid="stSidebar"] {
+            background-color: #1e293b;
+        }
+        [data-testid="stSidebar"] * {
+            color: white;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
     conn = st.connection("gsheets", type=GSheetsConnection)
 
     def get_data(nama_sheet):
@@ -21,29 +51,48 @@ def main():
             else:
                 return pd.DataFrame(columns=["nis", "nama_siswa", "tanggal", "bulan", "absensi", "nilai", "status", "prodi"])
 
+    # --- LOGIN ADMIN ---
     if "authenticated" not in st.session_state:
         st.session_state["authenticated"] = False
 
     if not st.session_state["authenticated"]:
-        st.markdown("<h3 style='text-align: center;'>🎓 LOGIN ADMIN</h3>", unsafe_allow_html=True)
-        col1, col2, col3 = st.columns([1,2,1])
-        with col2:
-            user = st.text_input("Username")
-            pwd = st.text_input("Password", type="password")
-            if st.button("MASUK", use_container_width=True):
-                if user == "admin" and pwd == "yppt2026":
-                    st.session_state["authenticated"] = True
-                    st.rerun()
-                else:
-                    st.error("Username atau Password Salah!")
+        # Tampilan Center
+        empty_col1, center_col, empty_col2 = st.columns([1, 1.5, 1])
+        
+        with center_col:
+            st.markdown("<br><br>", unsafe_allow_html=True) # Jarak atas
+            st.markdown("""
+                <div style='text-align: center;'>
+                    <h1 style='color: #007bff;'>🎓 SMK YPPT</h1>
+                    <p style='color: #64748b;'>Sistem Absensi & Nilai Online</p>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            with st.container():
+                st.markdown("<div class='login-box'>", unsafe_allow_html=True)
+                user = st.text_input("Username")
+                pwd = st.text_input("Password", type="password")
+                st.markdown("<br>", unsafe_allow_html=True)
+                if st.button("🚀 MASUK KE SISTEM", use_container_width=True):
+                    if user == "admin" and pwd == "yppt2026":
+                        st.session_state["authenticated"] = True
+                        st.success("Login Berhasil!")
+                        st.rerun()
+                    else:
+                        st.error("Username atau Password Salah!")
+                st.markdown("</div>", unsafe_allow_html=True)
         return
 
-    menu = st.sidebar.radio("MENU", ["Input Absensi", "Monitoring", "Kelola Siswa"])
-    if st.sidebar.button("Keluar"):
+    # --- MENU (SETELAH LOGIN) ---
+    st.sidebar.markdown(f"<h2 style='text-align: center;'>ADMIN PANEL</h2>", unsafe_allow_html=True)
+    menu = st.sidebar.radio("NAVIGASI", ["📝 Input Absensi", "📊 Monitoring", "👥 Kelola Siswa"])
+    st.sidebar.divider()
+    if st.sidebar.button("🚪 Keluar"):
         st.session_state["authenticated"] = False
         st.rerun()
 
-    if menu == "Input Absensi":
+    # --- LOGIKA MENU ---
+    if menu == "📝 Input Absensi":
         st.header("📝 Input Absensi & Nilai")
         df_siswa = get_data("siswa")
         if df_siswa.empty:
@@ -77,16 +126,16 @@ def main():
                 list_input.append([row['nis'], row['nama'], tgl.strftime('%Y-%m-%d'), tgl.strftime('%B'), stat, nil, stat, row['prodi']])
 
             st.divider()
-            if st.button("SIMPAN SEMUA DATA PRODI INI", type="primary", use_container_width=True):
+            if st.button("💾 SIMPAN SEMUA DATA", type="primary", use_container_width=True):
                 with st.spinner("Menyimpan ke database..."):
                     df_rekap_baru = pd.DataFrame(list_input, columns=["nis", "nama_siswa", "tanggal", "bulan", "absensi", "nilai", "status", "prodi"])
                     df_rekap_lama = get_data("rekap")
                     df_final = pd.concat([df_rekap_lama, df_rekap_baru], ignore_index=True)
                     conn.update(spreadsheet=URL_SHEET, worksheet="rekap", data=df_final)
-                    st.success(f"Alhamdulillah! Data {len(list_input)} siswa sudah masuk rekap.")
+                    st.success(f"Data {len(list_input)} siswa sudah masuk rekap.")
 
-    elif menu == "Monitoring":
-        st.header("📊 Hasil Absensi & Edit Data")
+    elif menu == "📊 Monitoring":
+        st.header("📊 Monitoring & Download")
         df_rekap = get_data("rekap")
         if not df_rekap.empty:
             col_d1, col_d2 = st.columns([3, 1])
@@ -98,7 +147,7 @@ def main():
                 buffer = io.BytesIO()
                 with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
                     df_tampil.to_excel(writer, index=False, sheet_name='Rekap')
-                st.download_button(label="📥 Download", data=buffer.getvalue(), 
+                st.download_button(label="📥 Download Excel", data=buffer.getvalue(), 
                                    file_name=f"rekap_{datetime.now().strftime('%Y%m%d')}.xlsx",
                                    mime="application/vnd.ms-excel")
             st.divider()
@@ -112,11 +161,10 @@ def main():
         else:
             st.info("Belum ada data rekap.")
 
-    elif menu == "Kelola Siswa":
-        st.header("👥 Kelola Siswa")
+    elif menu == "👥 Kelola Siswa":
+        st.header("👥 Kelola Data Siswa")
         df_siswa = get_data("siswa")
         
-        # --- Form Tambah Siswa ---
         with st.expander("➕ Tambah Siswa Baru"):
             with st.form("tambah_siswa"):
                 nis = st.text_input("NIS Siswa")
@@ -131,18 +179,17 @@ def main():
                     st.rerun()
 
         st.divider()
-        st.subheader("📋 Daftar & Hapus Siswa")
-        
+        st.subheader("📋 Daftar Siswa")
         if not df_siswa.empty:
             for i, row in df_siswa.iterrows():
                 c1, c2, c3, c4 = st.columns([2, 5, 2, 2])
                 c1.write(f"`{row['nis']}`")
-                c2.write(f"**{row['nama']}** ({row['prodi']})")
+                c2.write(f"**{row['nama']}**")
+                c3.write(f"{row['prodi']}")
                 if c4.button("🗑️ Hapus", key=f"del_{i}"):
-                    # Proses Hapus
                     df_siswa_baru = df_siswa.drop(i)
                     conn.update(spreadsheet=URL_SHEET, worksheet="siswa", data=df_siswa_baru)
-                    st.success(f"Siswa {row['nama']} berhasil dihapus!")
+                    st.success(f"Dihapus!")
                     st.rerun()
         else:
             st.info("Belum ada data siswa.")
