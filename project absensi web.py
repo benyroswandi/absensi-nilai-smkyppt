@@ -30,13 +30,13 @@ def main():
         .stButton>button {
             border-radius: 10px;
             font-weight: bold;
-            background-color: ##ef4444;
+            background-color: #ef4444; 
             color: white;
             height: 3em;
             transition: 0.3s;
         }
         .stButton>button:hover {
-            background-color: #0056b3;
+            background-color: #b91c1c;
             transform: translateY(-2px);
         }
         /* Sidebar Styling */
@@ -66,7 +66,6 @@ def main():
         
         with center_col:
             st.markdown("<br><br>", unsafe_allow_html=True) 
-            # HEADER LOGIN YANG DIRAPATKAN
             st.markdown("""
                 <div class='header-text' style='text-align: center;'>
                     <h1 style='color: #ef4444; margin-bottom: 0;'>🎓 SMK YPPT</h1>
@@ -191,20 +190,5 @@ def main():
         st.divider()
         if not df_siswa.empty:
             for i, row in df_siswa.iterrows():
-                c1, c2, c3, c4 = st.columns([2, 5, 2, 2])
-                c1.write(f"`{row['nis']}`")
-                c2.write(f"**{row['nama']}**")
-                c3.write(f"{row['prodi']}")
-                if c4.button("🗑️", key=f"del_{i}"):
-                    df_siswa_baru = df_siswa.drop(i)
-                    conn.update(spreadsheet=URL_SHEET, worksheet="siswa", data=df_siswa_baru)
-                    st.rerun()
-
-if __name__ == "__main__":
-    main()
-
-
-
-
-
-
+                # Menambahkan label teks HAPUS SISWA di samping ikon
+                c1, c2, c3, c4 = st.columns([2,
