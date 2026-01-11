@@ -191,4 +191,18 @@ def main():
         if not df_siswa.empty:
             for i, row in df_siswa.iterrows():
                 # Menambahkan label teks HAPUS SISWA di samping ikon
-                c1, c2, c3, c4 = st.columns([2,
+                c1, c2, c3, c4 = st.columns([2, 5, 2, 3])
+                c1.write(f"`{row['nis']}`")
+                c2.write(f"**{row['nama']}**")
+                c3.write(f"{row['prodi']}")
+                # Tombol hapus dengan label teks agar lebih jelas
+                if c4.button(f"🗑️ HAPUS SISWA", key=f"del_{i}"):
+                    df_siswa_baru = df_siswa.drop(i)
+                    conn.update(spreadsheet=URL_SHEET, worksheet="siswa", data=df_siswa_baru)
+                    st.success(f"Siswa {row['nama']} Berhasil Dihapus!")
+                    st.rerun()
+        else:
+            st.info("Belum ada data siswa.")
+
+if __name__ == "__main__":
+    main()
