@@ -69,9 +69,9 @@ def main():
             # HEADER LOGIN YANG DIRAPATKAN
             st.markdown("""
                 <div class='header-text' style='text-align: center;'>
-                    <h1 style='color: #1e293b; margin-bottom: 0;'>🎓 SMK YPPT</h1>
+                    <h1 style='color: #ef4444; margin-bottom: 0;'>🎓 SMK YPPT</h1>
                     <h4 style='color: #ef4444; font-weight: bold; font-size: 1.1em; margin-top: 0;'>Sistem Absensi & Nilai Online</h4>
-                    <h4 style='color: #007bff; margin-top: 5px; margin-bottom: 5px;'>TP. 2025/2026</h4>
+                    <h4 style='color: #ef4444; margin-top: 5px; margin-bottom: 5px;'>TP. 2025/2026</h4>
                 </div>
             """, unsafe_allow_html=True)
             
@@ -202,4 +202,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
