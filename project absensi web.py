@@ -16,8 +16,11 @@ def main():
     conn = st.connection("gsheets", type=GSheetsConnection)
 
     # Fungsi Ambil Data Siswa
-    def get_data_siswa():
-        return conn.read(spreadsheet=URL_SHEET, worksheet="siswa")
+    # Cari fungsi get_data_siswa, lalu ubah isinya jadi seperti ini:
+def get_data_siswa():
+    # Link ini langsung mengambil data dari Google Sheets sebagai CSV
+    url = "https://docs.google.com/spreadsheets/d/1__d7A0qCxtkxnJT8oYXbmZfY1GAiFcyB600fBNQaJV8/export?format=csv&gid=0"
+    return pd.read_csv(url)
 
     # Fungsi Simpan Absensi
     def simpan_rekap(df_baru):
@@ -98,6 +101,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
