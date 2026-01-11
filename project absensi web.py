@@ -48,8 +48,31 @@ def main():
 
     # --- LOGIKA MENU ---
     if menu == "Input Absensi":
-        st.header("📝 Input Absensi")
-        df_siswa = get_data("siswa")
+        # --- BAGIAN FILTER PRODI ---
+        st.subheader("Pilih Kelompok Siswa")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            # Mengambil daftar prodi unik dari Google Sheets
+            daftar_prodi = df_siswa['prodi'].unique()
+            prodi_terpilih = st.selectbox("Pilih Program Keahlian (Prodi):", daftar_prodi)
+        
+        with col2:
+            # Filter siswa berdasarkan prodi yang dipilih
+            df_filtered = df_siswa[df_siswa['prodi'] == prodi_terpilih]
+            daftar_nama = df_filtered['nama'].tolist()
+            nama_terpilih = st.selectbox("Pilih Nama Siswa:", daftar_nama)
+
+        st.info(f"Menampilkan {len(daftar_nama)} siswa untuk Prodi {prodi_terpilih}")
+
+        # --- LANJUT KE INPUT NILAI ---
+        with st.form("form_absensi"):
+            tgl = st.date_input("Tanggal", datetime.date.today())
+            absensi = st.selectbox("Kehadiran", ["Hadir", "Sakit", "Izin", "Alpa"])
+            nilai = st.number_input("Input Nilai (0-100)", min_value=0, max_value=100, step=1)
+            
+            submit = st.form_submit_button("Simpan Data")
+            # ... (lanjutkan perintah simpan ke gsheets)
         
         if df_siswa.empty:
             st.warning("Data siswa kosong.")
@@ -93,3 +116,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
