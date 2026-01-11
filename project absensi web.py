@@ -65,6 +65,7 @@ def main():
                 <div style='text-align: center;'>
                     <h1 style='color: #007bff;'>🎓 SMK YPPT</h1>
                     <p style='color: #64748b;'>Sistem Absensi & Nilai Online</p>
+                    <p style='color: #64748b;'>TH. 2025 / 2026</p>
                 </div>
             """, unsafe_allow_html=True)
             
@@ -196,3 +197,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
