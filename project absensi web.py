@@ -59,9 +59,7 @@ def main():
                 tgl = st.date_input("Tanggal Pelaksanaan", datetime.now())
             
             st.info(f"Menampilkan {len(df_filtered)} siswa untuk Prodi: {prodi_terpilih}")
-            
             st.divider()
-            # Header Tabel dengan NIS
             h1, h2, h3, h4 = st.columns([1.5, 3, 4, 2])
             h1.markdown("**NIS**")
             h2.markdown("**Nama Siswa**")
@@ -72,11 +70,10 @@ def main():
             list_input = []
             for i, row in df_filtered.iterrows():
                 c1, c2, c3, c4 = st.columns([1.5, 3, 4, 2])
-                c1.write(f"`{row['nis']}`") # Menampilkan NIS dengan format kode kecil
+                c1.write(f"`{row['nis']}`")
                 c2.write(f"**{row['nama']}**")
                 stat = c3.radio(f"Status_{i}", ["Hadir", "Sakit", "Izin", "Alpa"], horizontal=True, key=f"rad_{i}", label_visibility="collapsed")
                 nil = c4.number_input(f"Nilai_{i}", 0, 100, 0, key=f"num_{i}", label_visibility="collapsed")
-                # NIS ikut dimasukkan ke rekap
                 list_input.append([row['nis'], row['nama'], tgl.strftime('%Y-%m-%d'), tgl.strftime('%B'), stat, nil, stat, row['prodi']])
 
             st.divider()
@@ -89,24 +86,41 @@ def main():
                     st.success(f"Alhamdulillah! Data {len(list_input)} siswa sudah masuk rekap.")
 
     elif menu == "Monitoring":
-        st.header("📊 Hasil Absensi & Download")
+        st.header("📊 Hasil Absensi & Edit Data")
         df_rekap = get_data("rekap")
         
         if not df_rekap.empty:
-            prodi_list = ["Semua"] + sorted(df_rekap['prodi'].unique().tolist())
-            pilihan = st.selectbox("Filter Tampilan Prodi:", prodi_list)
+            # 1. DOWNLOAD & FILTER
+            col_d1, col_d2 = st.columns([3, 1])
+            with col_d1:
+                prodi_list = ["Semua"] + sorted(df_rekap['prodi'].unique().tolist())
+                pilihan = st.selectbox("Filter Tampilan Prodi:", prodi_list)
             
             df_tampil = df_rekap if pilihan == "Semua" else df_rekap[df_rekap['prodi'] == pilihan]
             
-            buffer = io.BytesIO()
-            with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
-                df_tampil.to_excel(writer, index=False, sheet_name='Rekap_Absensi')
+            with col_d2:
+                buffer = io.BytesIO()
+                with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+                    df_tampil.to_excel(writer, index=False, sheet_name='Rekap')
+                st.download_button(label="📥 Download", data=buffer.getvalue(), 
+                                   file_name=f"rekap_{datetime.now().strftime('%Y%m%d')}.xlsx",
+                                   mime="application/vnd.ms-excel")
+
+            st.divider()
             
-            st.download_button(label="📥 Download Rekap (Excel)", data=buffer.getvalue(), 
-                               file_name=f"rekap_{pilihan}_{datetime.now().strftime('%Y%m%d')}.xlsx",
-                               mime="application/vnd.ms-excel", use_container_width=True)
+            # 2. FITUR EDIT (Data Editor)
+            st.subheader("📝 Mode Edit Data")
+            st.caption("Tips: Klik langsung pada kolom 'absensi' atau 'nilai' untuk mengubah data, lalu klik tombol SIMPAN di bawah.")
             
-            st.dataframe(df_tampil, use_container_width=True)
+            # Menggunakan st.data_editor agar tabel bisa diketik langsung
+            df_edited = st.data_editor(df_rekap, use_container_width=True, num_rows="dynamic")
+            
+            if st.button("💾 SIMPAN PERUBAHAN EDIT", type="primary", use_container_width=True):
+                with st.spinner("Memperbarui data di Google Sheets..."):
+                    conn.update(spreadsheet=URL_SHEET, worksheet="rekap", data=df_edited)
+                    st.success("Perubahan data berhasil disimpan!")
+                    st.rerun()
+
         else:
             st.info("Belum ada data rekap.")
 
@@ -114,7 +128,7 @@ def main():
         st.header("👥 Kelola Siswa")
         df_siswa = get_data("siswa")
         with st.form("tambah_siswa"):
-            nis = st.text_input("NIS Siswa") # Tambah input NIS
+            nis = st.text_input("NIS Siswa")
             n = st.text_input("Nama Siswa")
             k = st.selectbox("Kelas", ["X", "XI", "XII"])
             p = st.text_input("Prodi", value="T. DKV")
