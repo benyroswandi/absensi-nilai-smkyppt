@@ -110,7 +110,7 @@ def main():
         st.markdown(f"<div class='status-user'>🟢 Admin Online<br>{waktu_sekarang.strftime('%d %b %Y')}</div>", unsafe_allow_html=True)
         
         st.divider()
-        menu = st.sidebar.radio("NAVIGASI MENU", ["📝 Input Absensi", "📊 Monitoring", "👥 Kelola Siswa"])
+        menu = st.sidebar.radio("NAVIGASI MENU", ["📝 Input Absensi", "📊 Monitoring & Edit", "👥 Kelola Siswa"])
         st.divider()
         
         if st.sidebar.button("🚪 Keluar Aplikasi", use_container_width=True):
@@ -200,5 +200,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
