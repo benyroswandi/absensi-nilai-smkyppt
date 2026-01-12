@@ -11,10 +11,35 @@ URL_LOGO = "https://raw.githubusercontent.com/benyroswandi/absensi-nilai-smkyppt
 def main():
     st.set_page_config(page_title="SMK YPPT - Absensi & Nilai", layout="wide", page_icon="🎓")
     
+    # --- CSS CUSTOM UNTUK TAMPILAN LOGIN KINCLONG ---
     st.markdown("""
         <style>
-        .login-box { background-color: #ffffff; padding: 25px; border-radius: 15px; box-shadow: 0px 10px 25px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
-        .stButton>button { border-radius: 10px; font-weight: bold; background-color: #ef4444; color: white; height: 3em; }
+        /* Container Utama Login */
+        .login-box { 
+            background-color: #1e293b; 
+            padding: 30px; 
+            border-radius: 20px; 
+            border: 1px solid #334155;
+            box-shadow: 0px 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        /* Pemisah Kolom Putih (Divider) */
+        .white-divider {
+            height: 2px;
+            background-color: #ffffff;
+            margin: 20px 0;
+            border-radius: 10px;
+            opacity: 0.8;
+        }
+        /* Style Button */
+        .stButton>button { 
+            border-radius: 12px; 
+            font-weight: bold; 
+            background-color: #ef4444; 
+            color: white; 
+            height: 3.5em;
+            border: none;
+            width: 100%;
+        }
         [data-testid="stSidebar"] { background-color: #0f172a; }
         .sidebar-logo { display: block; margin-left: auto; margin-right: auto; width: 100px; margin-bottom: 10px; }
         .status-user { color: #10b981; font-size: 14px; text-align: center; margin-bottom: 20px; }
@@ -30,30 +55,47 @@ def main():
         except:
             return pd.DataFrame()
 
-    # --- LOGIN ---
+    # --- HALAMAN LOGIN ---
     if "authenticated" not in st.session_state:
         st.session_state["authenticated"] = False
 
     if not st.session_state["authenticated"]:
-        empty_col1, center_col, empty_col2 = st.columns([1, 1, 1])
+        _, center_col, _ = st.columns([1, 1.2, 1])
         with center_col:
             st.markdown("<br><br>", unsafe_allow_html=True) 
-            st.markdown(f"<div style='text-align: center;'><h1 style='color: #ef4444;'>🎓 SMK YPPT</h1><p style='font-weight: bold;'>Sistem Absensi & Nilai Online</p></div>", unsafe_allow_html=True)
+            # Header Tanpa Kotak Putih Besar
+            st.markdown(f"""
+                <div style='text-align: center;'>
+                    <img src='{URL_LOGO}' width='80'>
+                    <h1 style='color: #ef4444; margin-bottom:0;'>SMK YPPT</h1>
+                    <p style='color: #ffffff; font-size: 1.1em; opacity: 0.9;'>Sistem Absensi & Nilai Online</p>
+                </div>
+            """, unsafe_allow_html=True)
+            
             with st.container():
                 st.markdown("<div class='login-box'>", unsafe_allow_html=True)
-                st.info("Silakan masukkan akun admin sekolah")
+                
+                # INI PEMISAH KOLOM PUTIH YANG KINCLONG
+                st.markdown("<div class='white-divider'></div>", unsafe_allow_html=True)
+                
+                st.markdown("<p style='color: #94a3b8; text-align: center;'>Silakan masuk dengan akun admin sekolah</p>", unsafe_allow_html=True)
+                
                 user = st.text_input("Username")
                 pwd = st.text_input("Password", type="password")
-                if st.button("🚀 MASUK KE SISTEM", use_container_width=True):
+                
+                st.markdown("<br>", unsafe_allow_html=True)
+                if st.button("🚀 MASUK KE SISTEM"):
                     if user == "admin" and pwd == "yppt2026":
                         st.session_state["authenticated"] = True
                         st.rerun()
                     else:
-                        st.error("Akun tidak ditemukan!")
+                        st.error("Username atau Password Salah!")
                 st.markdown("</div>", unsafe_allow_html=True)
+            
+            st.markdown("<p style='text-align: center; color: #64748b; margin-top: 20px;'>Hibah Program oleh: Abah</p>", unsafe_allow_html=True)
         return
 
-    # --- SIDEBAR ---
+    # --- SIDEBAR & MENU UTAMA (Tetap Sama) ---
     with st.sidebar:
         st.markdown(f"<img src='{URL_LOGO}' class='sidebar-logo'>", unsafe_allow_html=True)
         st.markdown("<h3 style='text-align: center; color: white;'>SMK YPPT</h3>", unsafe_allow_html=True)
@@ -65,31 +107,26 @@ def main():
             st.session_state["authenticated"] = False
             st.rerun()
 
-    # --- LOGIKA MENU ---
+    # --- LOGIKA TIAP MENU (Tetap Sama Seperti Sebelumnya) ---
     if menu == "📝 Input Absensi":
         st.header("📝 Input Absensi & Nilai")
         df_siswa = get_data("siswa")
-        
         if df_siswa.empty:
             st.warning("Data siswa belum ada.")
         else:
             col_a1, col_a2 = st.columns(2)
-            with col_a1:
-                prodi_terpilih = st.selectbox("Pilih Prodi/Jurusan:", sorted(df_siswa['prodi'].unique()))
-            with col_a2:
-                nama_guru = st.text_input("Nama Guru Pengajar:")
+            prodi_terpilih = col_a1.selectbox("Pilih Prodi/Jurusan:", sorted(df_siswa['prodi'].unique()))
+            nama_guru = col_a2.text_input("Nama Guru Pengajar:")
 
             col_b1, col_b2 = st.columns(2)
-            with col_b1:
-                tgl = st.date_input("Tanggal", waktu_sekarang)
-            with col_b2:
-                mapel = st.text_input("Mata Pelajaran:")
+            tgl = col_b1.date_input("Tanggal", waktu_sekarang)
+            mapel = col_b2.text_input("Mata Pelajaran:")
             
             df_filtered = df_siswa[df_siswa['prodi'] == prodi_terpilih]
             st.divider()
 
             if not nama_guru or not mapel:
-                st.warning("⚠️ Mohon isi Nama Guru dan Mata Pelajaran untuk mengaktifkan tabel absensi.")
+                st.warning("⚠️ Mohon isi Nama Guru dan Mata Pelajaran.")
             else:
                 h1, h2, h3, h4 = st.columns([1.5, 3, 4.5, 1.5])
                 h1.markdown("**NIS**"); h2.markdown("**Nama Siswa**"); h3.markdown("**Status**"); h4.markdown("**Nilai**")
@@ -103,12 +140,12 @@ def main():
                     list_input.append([row['nis'], row['nama'], tgl.strftime('%Y-%m-%d'), tgl.strftime('%B'), stat, nil, stat, row['prodi'], nama_guru, mapel])
 
                 if st.button("💾 SIMPAN DATA", type="primary", use_container_width=True):
-                    with st.spinner("Menyimpan ke sistem..."):
+                    with st.spinner("Menyimpan..."):
                         df_rekap_baru = pd.DataFrame(list_input, columns=["nis", "nama_siswa", "tanggal", "bulan", "absensi", "nilai", "status", "prodi", "nama_guru", "mata_pelajaran"])
                         df_rekap_lama = get_data("rekap")
                         df_final = pd.concat([df_rekap_lama, df_rekap_baru], ignore_index=True)
                         conn.update(spreadsheet=URL_SHEET, worksheet="rekap", data=df_final)
-                        st.success(f"Berhasil! Data absensi {mapel} telah tersimpan.")
+                        st.success("Data Tersimpan!")
                         st.balloons()
 
     elif menu == "📊 Monitoring Harian":
