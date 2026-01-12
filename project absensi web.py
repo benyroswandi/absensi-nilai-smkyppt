@@ -124,14 +124,15 @@ def main():
             
             st.info(f"📋 Mengabsen {len(df_filtered)} siswa - {prodi_terpilih}")
             st.divider()
-            h1, h2, h3, h4 = st.columns([1.5, 3, 4, 2])
+            h1, h2, h3, h4 = st.columns([1.5, 3, 4.5, 1.5]) # Lebar kolom disesuaikan karena pilihan status nambah
             h1.markdown("**NIS**"); h2.markdown("**Nama Siswa**"); h3.markdown("**Status**"); h4.markdown("**Nilai**")
             
             list_input = []
             for i, row in df_filtered.iterrows():
-                c1, c2, c3, c4 = st.columns([1.5, 3, 4, 2])
+                c1, c2, c3, c4 = st.columns([1.5, 3, 4.5, 1.5])
                 c1.write(f"`{row['nis']}`"); c2.write(f"**{row['nama']}**")
-                stat = c3.radio(f"S_{i}", ["Hadir", "Sakit", "Izin", "Alpa"], horizontal=True, key=f"rad_{i}", label_visibility="collapsed")
+                # TAMBAH STATUS 'KABUR' DI SINI
+                stat = c3.radio(f"S_{i}", ["Hadir", "Sakit", "Izin", "Alpa", "Kabur"], horizontal=True, key=f"rad_{i}", label_visibility="collapsed")
                 nil = c4.number_input(f"N_{i}", 0, 100, 0, key=f"num_{i}", label_visibility="collapsed")
                 list_input.append([row['nis'], row['nama'], tgl.strftime('%Y-%m-%d'), tgl.strftime('%B'), stat, nil, stat, row['prodi']])
 
@@ -166,7 +167,6 @@ def main():
         st.header("👥 Manajemen Data Siswa")
         df_siswa = get_data("siswa")
         
-        # 1. Fitur Tambah Siswa
         with st.expander("➕ Tambah Siswa Baru"):
             with st.form("tambah_siswa"):
                 c1, c2 = st.columns(2)
@@ -179,28 +179,20 @@ def main():
                     st.rerun()
 
         st.divider()
-        
-        # 2. Fitur Filter Hapus Siswa (Ini yang Abah minta)
         st.subheader("🗑️ Hapus Data Siswa")
         if not df_siswa.empty:
             prodi_list = sorted(df_siswa['prodi'].unique().tolist())
             filter_prodi = st.selectbox("Filter Prodi untuk Hapus:", ["Tampilkan Semua"] + prodi_list)
             
-            # Filter DataFrame berdasarkan pilihan
             if filter_prodi == "Tampilkan Semua":
                 df_view = df_siswa
             else:
                 df_view = df_siswa[df_siswa['prodi'] == filter_prodi]
             
             st.write(f"Menampilkan {len(df_view)} siswa.")
-            
-            # Tampilkan list siswa hasil filter
             for i, row in df_view.iterrows():
                 c1, c2, c3, c4 = st.columns([2, 5, 2, 3])
-                c1.write(f"`{row['nis']}`")
-                c2.write(f"**{row['nama']}**")
-                c3.write(f"{row['prodi']}")
-                # Tombol hapus tetap menggunakan index asli 'i' dari df_siswa
+                c1.write(f"`{row['nis']}`"); c2.write(f"**{row['nama']}**"); c3.write(f"{row['prodi']}")
                 if c4.button(f"🗑️ HAPUS", key=f"del_{i}"):
                     df_final_hapus = df_siswa.drop(i)
                     conn.update(spreadsheet=URL_SHEET, worksheet="siswa", data=df_final_hapus)
