@@ -14,14 +14,7 @@ def main():
     # --- CSS CUSTOM: PERBAIKAN TAMPILAN LOGIN ---
     st.markdown("""
         <style>
-        .login-box { 
-            background-color: #1e293b; 
-            padding: 35px; 
-            border-radius: 20px; 
-            border: 1px solid #334155;
-            box-shadow: 0px 20px 25px -5px rgba(0, 0, 0, 0.4);
-            margin-top: 20px;
-        }
+        
         .white-divider {
             height: 1px;
             background-color: rgba(255,255,255,0.3);
@@ -208,4 +201,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
