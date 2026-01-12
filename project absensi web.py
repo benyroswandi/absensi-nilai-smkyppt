@@ -99,7 +99,7 @@ def main():
     with st.sidebar:
         st.markdown(f"<img src='{URL_LOGO}' class='sidebar-logo'>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: white; margin-bottom:0;'>SMK YPPT</p>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: #94a3b8; margin-bottom: 5px;'>TP. 2025/2026</p>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: white; margin-bottom: 5px;'>TP. 2025/2026</p>", unsafe_allow_html=True)
         st.markdown(f"<div class='status-user'>🟢 Admin Online<br>{waktu_sekarang.strftime('%d %b %Y')}</div>", unsafe_allow_html=True)
         st.divider()
         menu = st.radio("NAVIGASI MENU", ["📝 Input Absensi", "📊 Monitoring", "📊 Rekap Bulanan", "👥 Kelola Siswa"])
@@ -217,4 +217,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
