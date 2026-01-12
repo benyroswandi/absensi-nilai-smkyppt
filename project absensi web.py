@@ -64,6 +64,7 @@ def main():
         _, center_col, _ = st.columns([1, 1.2, 1])
         with center_col:
             st.markdown("<br><br>", unsafe_allow_html=True) 
+            # Header Logo & Judul Sekolah (Di luar wadah)
             st.markdown(f"""
                 <div style='text-align: center;'>
                     <img src='{URL_LOGO}' width='90'>
@@ -72,15 +73,21 @@ def main():
                 </div>
             """, unsafe_allow_html=True)
             
-            # KOTAK LOGIN
+            # --- MULAI WADAH LOGIN ---
             with st.container():
+                # Membuka wadah biru gelap
                 st.markdown("<div class='login-box'>", unsafe_allow_html=True)
                 
-                # Teks instruksi sekarang masuk ke dalam kotak
-                st.markdown("<p style='color: #ffffff; text-align: center; font-weight: bold; margin-bottom: 5px;'>ADMINISTRATOR</p>", unsafe_allow_html=True)
-                st.markdown("<div class='white-divider'></div>", unsafe_allow_html=True)
-                st.markdown("<p style='color: #94a3b8; text-align: center; font-size: 0.9em;'>Silakan masuk dengan akun resmi sekolah</p>", unsafe_allow_html=True)
+                # SEKARANG ADMINISTRATOR SUDAH DI DALAM WADAH
+                st.markdown("""
+                    <h3 style='color: white; text-align: center; margin-top: 0;'>ADMINISTRATOR</h3>
+                    <div class='white-divider'></div>
+                    <p style='color: #94a3b8; text-align: center; font-size: 0.9em; margin-bottom: 25px;'>
+                        Silakan masuk dengan akun resmi sekolah
+                    </p>
+                """, unsafe_allow_html=True)
                 
+                # Input Username & Password di dalam wadah
                 user = st.text_input("Username", key="user_idx")
                 pwd = st.text_input("Password", type="password", key="pwd_idx")
                 
@@ -91,9 +98,10 @@ def main():
                         st.rerun()
                     else:
                         st.error("Username atau Password Salah!")
+                
+                # Menutup wadah biru gelap
                 st.markdown("</div>", unsafe_allow_html=True)
         return
-
     # --- SIDEBAR & MENU UTAMA ---
     with st.sidebar:
         st.markdown(f"<img src='{URL_LOGO}' class='sidebar-logo'>", unsafe_allow_html=True)
@@ -200,3 +208,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
