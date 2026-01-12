@@ -177,4 +177,27 @@ def main():
             st.info("Belum ada data.")
 
     elif menu == "👥 Kelola Siswa":
-        st.header("👥 Manajemen Data Sis
+        st.header("👥 Manajemen Data Siswa")
+        df_siswa = get_data("siswa")
+        with st.expander("➕ Tambah Siswa Baru"):
+            with st.form("tambah_siswa"):
+                c1, c2 = st.columns(2)
+                nis, n = c1.text_input("NIS"), c2.text_input("Nama Lengkap")
+                k, p = c1.selectbox("Kelas", ["10", "11", "12"]), c2.text_input("Prodi", value="T. Listrik")
+                if st.form_submit_button("Simpan Siswa"):
+                    df_baru = pd.DataFrame([[nis, n, k, p]], columns=["nis", "nama", "kelas", "prodi"])
+                    df_final = pd.concat([df_siswa, df_baru], ignore_index=True)
+                    conn.update(spreadsheet=URL_SHEET, worksheet="siswa", data=df_final)
+                    st.rerun()
+
+        st.divider()
+        if not df_siswa.empty:
+            for i, row in df_siswa.iterrows():
+                c1, c2, c3, c4 = st.columns([2, 5, 2, 3])
+                c1.write(f"`{row['nis']}`"); c2.write(f"**{row['nama']}**"); c3.write(f"{row['prodi']}")
+                if c4.button(f"🗑️ HAPUS SISWA", key=f"del_{i}"):
+                    conn.update(spreadsheet=URL_SHEET, worksheet="siswa", data=df_siswa.drop(i))
+                    st.rerun()
+
+if __name__ == "__main__":
+    main()
