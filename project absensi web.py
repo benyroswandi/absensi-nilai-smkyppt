@@ -102,7 +102,7 @@ def main():
         st.markdown("<p style='text-align: center; color: #94a3b8; margin-bottom: 5px;'>TP. 2025/2026</p>", unsafe_allow_html=True)
         st.markdown(f"<div class='status-user'>🟢 Admin Online<br>{waktu_sekarang.strftime('%d %b %Y')}</div>", unsafe_allow_html=True)
         st.divider()
-        menu = st.radio("NAVIGASI MENU", ["📝 Input Absensi", "📊 Monitoring", "👥 Kelola Siswa"])
+        menu = st.radio("NAVIGASI MENU", ["📝 Input Absensi", "📊 Monitoring", "📊 Rekap Bulanan", "👥 Kelola Siswa"])
         st.divider()
         if st.button("🚪 Keluar Aplikasi", use_container_width=True):
             st.session_state["authenticated"] = False
@@ -124,14 +124,13 @@ def main():
             
             st.info(f"📋 Mengabsen {len(df_filtered)} siswa - {prodi_terpilih}")
             st.divider()
-            h1, h2, h3, h4 = st.columns([1.5, 3, 4.5, 1.5]) # Lebar kolom disesuaikan karena pilihan status nambah
+            h1, h2, h3, h4 = st.columns([1.5, 3, 4.5, 1.5])
             h1.markdown("**NIS**"); h2.markdown("**Nama Siswa**"); h3.markdown("**Status**"); h4.markdown("**Nilai**")
             
             list_input = []
             for i, row in df_filtered.iterrows():
                 c1, c2, c3, c4 = st.columns([1.5, 3, 4.5, 1.5])
                 c1.write(f"`{row['nis']}`"); c2.write(f"**{row['nama']}**")
-                # TAMBAH STATUS 'KABUR' DI SINI
                 stat = c3.radio(f"S_{i}", ["Hadir", "Sakit", "Izin", "Alpa", "Kabur"], horizontal=True, key=f"rad_{i}", label_visibility="collapsed")
                 nil = c4.number_input(f"N_{i}", 0, 100, 0, key=f"num_{i}", label_visibility="collapsed")
                 list_input.append([row['nis'], row['nama'], tgl.strftime('%Y-%m-%d'), tgl.strftime('%B'), stat, nil, stat, row['prodi']])
@@ -145,28 +144,54 @@ def main():
                     st.success("Data berhasil disimpan!")
 
     elif menu == "📊 Monitoring":
-        st.header("📊 Rekapitulasi Data")
+        st.header("📊 Riwayat Harian (Semua Data)")
         df_rekap = get_data("rekap")
         if not df_rekap.empty:
-            col_d1, col_d2 = st.columns([3, 1])
-            with col_d1:
-                pilihan = st.selectbox("Tampilkan Berdasarkan Prodi:", ["Semua Prodi"] + sorted(df_rekap['prodi'].unique().tolist()))
-            df_tampil = df_rekap if pilihan == "Semua Prodi" else df_rekap[df_rekap['prodi'] == pilihan]
-            with col_d2:
-                buffer = io.BytesIO()
-                with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
-                    df_tampil.to_excel(writer, index=False, sheet_name='Rekap')
-                st.download_button(label="📥 Download Excel", data=buffer.getvalue(), 
-                                   file_name=f"rekap_yppt_{datetime.now().strftime('%d%m%Y')}.xlsx",
-                                   mime="application/vnd.ms-excel")
             st.data_editor(df_rekap, use_container_width=True, num_rows="dynamic")
         else:
-            st.info("Belum ada data.")
+            st.info("Belum ada data rekapan.")
+
+    elif menu == "📊 Rekap Bulanan":
+        st.header("📊 Rekapitulasi Absensi Bulanan")
+        df_rekap = get_data("rekap")
+        if not df_rekap.empty:
+            col_r1, col_r2 = st.columns(2)
+            with col_r1:
+                bln = st.selectbox("Pilih Bulan:", sorted(df_rekap['bulan'].unique()))
+            with col_r2:
+                prd = st.selectbox("Pilih Prodi:", ["Semua Prodi"] + sorted(df_rekap['prodi'].unique().tolist()))
+            
+            df_filtered_rekap = df_rekap[df_rekap['bulan'] == bln]
+            if prd != "Semua Prodi":
+                df_filtered_rekap = df_filtered_rekap[df_filtered_rekap['prodi'] == prd]
+            
+            # PROSES PIVOT (MENGHITUNG STATUS)
+            rekap_final = df_filtered_rekap.groupby(['nis', 'nama_siswa', 'prodi', 'absensi']).size().unstack(fill_value=0).reset_index()
+            
+            # Pastikan semua kolom status ada meskipun tidak ada datanya
+            for col in ["Hadir", "Sakit", "Izin", "Alpa", "Kabur"]:
+                if col not in rekap_final.columns:
+                    rekap_final[col] = 0
+            
+            # Hitung Rata-rata Nilai
+            rerata_nilai = df_filtered_rekap.groupby('nis')['nilai'].mean().reset_index()
+            rekap_final = rekap_final.merge(rerata_nilai, on='nis')
+            rekap_final.rename(columns={'nilai': 'Rata-rata Nilai'}, inplace=True)
+
+            st.dataframe(rekap_final, use_container_width=True)
+            
+            # Button Download
+            buffer = io.BytesIO()
+            with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+                rekap_final.to_excel(writer, index=False, sheet_name='RekapBulanan')
+            st.download_button(f"📥 Download Rekap {bln} ({prd})", data=buffer.getvalue(), 
+                               file_name=f"Rekap_{bln}_{prd}.xlsx", mime="application/vnd.ms-excel")
+        else:
+            st.warning("Data rekapan masih kosong.")
 
     elif menu == "👥 Kelola Siswa":
         st.header("👥 Manajemen Data Siswa")
         df_siswa = get_data("siswa")
-        
         with st.expander("➕ Tambah Siswa Baru"):
             with st.form("tambah_siswa"):
                 c1, c2 = st.columns(2)
@@ -181,25 +206,14 @@ def main():
         st.divider()
         st.subheader("🗑️ Hapus Data Siswa")
         if not df_siswa.empty:
-            prodi_list = sorted(df_siswa['prodi'].unique().tolist())
-            filter_prodi = st.selectbox("Filter Prodi untuk Hapus:", ["Tampilkan Semua"] + prodi_list)
-            
-            if filter_prodi == "Tampilkan Semua":
-                df_view = df_siswa
-            else:
-                df_view = df_siswa[df_siswa['prodi'] == filter_prodi]
-            
-            st.write(f"Menampilkan {len(df_view)} siswa.")
+            filter_prodi = st.selectbox("Filter Prodi untuk Hapus:", ["Tampilkan Semua"] + sorted(df_siswa['prodi'].unique().tolist()))
+            df_view = df_siswa if filter_prodi == "Tampilkan Semua" else df_siswa[df_siswa['prodi'] == filter_prodi]
             for i, row in df_view.iterrows():
                 c1, c2, c3, c4 = st.columns([2, 5, 2, 3])
                 c1.write(f"`{row['nis']}`"); c2.write(f"**{row['nama']}**"); c3.write(f"{row['prodi']}")
                 if c4.button(f"🗑️ HAPUS", key=f"del_{i}"):
-                    df_final_hapus = df_siswa.drop(i)
-                    conn.update(spreadsheet=URL_SHEET, worksheet="siswa", data=df_final_hapus)
-                    st.success(f"Siswa {row['nama']} berhasil dihapus!")
+                    conn.update(spreadsheet=URL_SHEET, worksheet="siswa", data=df_siswa.drop(i))
                     st.rerun()
-        else:
-            st.info("Data siswa kosong.")
 
 if __name__ == "__main__":
     main()
