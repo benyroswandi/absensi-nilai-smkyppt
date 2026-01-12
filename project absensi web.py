@@ -73,7 +73,6 @@ def main():
                 
                 # SEKARANG ADMINISTRATOR SUDAH DI DALAM WADAH
                 st.markdown("""
-                    <h3 style='color: white; text-align: center; margin-top: 0;'>ADMINISTRATOR</h3>
                     <div class='white-divider'></div>
                     <p style='color: #94a3b8; text-align: center; font-size: 0.9em; margin-bottom: 25px;'>
                         Silakan masuk dengan akun resmi sekolah
@@ -201,5 +200,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
