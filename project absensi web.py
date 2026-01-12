@@ -176,7 +176,7 @@ def main():
             st.info("Belum ada data.")
 
     elif menu == "👥 Kelola Siswa":
-        st.header("👥 Manajemen Data Siswa ( Tambah dan Hapus Siswa")
+        st.header("👥 Manajemen Data Siswa (Tambah & Hapus")
         df_siswa = get_data("siswa")
         with st.expander("➕ Tambah Siswa Baru"):
             with st.form("tambah_siswa"):
@@ -200,6 +200,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
