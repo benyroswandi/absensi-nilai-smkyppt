@@ -103,7 +103,7 @@ def main():
     # --- SIDEBAR (JAM DIHAPUS, DIGANTI STATUS) ---
     with st.sidebar:
         st.markdown(f"<img src='{URL_LOGO}' class='sidebar-logo'>", unsafe_allow_html=True)
-        st.markdown("<h3 style='text-align: center; color: white; margin-bottom:0;'>SMK YPPT</h3>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: white; margin-bottom:0;'>SMK YPPT</p>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: #94a3b8; margin-bottom: 5px;'>TP. 2025/2026</p>", unsafe_allow_html=True)
         
         # Pengganti Jam: Info Login
@@ -200,3 +200,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
