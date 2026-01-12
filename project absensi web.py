@@ -110,7 +110,7 @@ def main():
         st.markdown(f"<div class='status-user'>🟢 Admin Online<br>{waktu_sekarang.strftime('%d %b %Y')}</div>", unsafe_allow_html=True)
         
         st.divider()
-        menu = st.sidebar.radio("NAVIGASI MENU", ["📝 Input Absensi", "📊 Monitoring & Edit", "👥 Kelola Siswa"])
+        menu = st.sidebar.radio("NAVIGASI MENU", ["📝 Input Absensi", "📊 Monitoring", "👥 Kelola Siswa"])
         st.divider()
         
         if st.sidebar.button("🚪 Keluar Aplikasi", use_container_width=True):
@@ -154,8 +154,8 @@ def main():
                     conn.update(spreadsheet=URL_SHEET, worksheet="rekap", data=df_final)
                     st.success("Data berhasil disimpan!")
 
-    elif menu == "📊 Monitoring & Edit":
-        st.header("📊 Rekapitulasi Data")
+    elif menu == "📊 Monitoring":
+        st.header("📊 Rekapitulasi Data & Edit")
         df_rekap = get_data("rekap")
         if not df_rekap.empty:
             col_d1, col_d2 = st.columns([3, 1])
@@ -176,7 +176,7 @@ def main():
             st.info("Belum ada data.")
 
     elif menu == "👥 Kelola Siswa":
-        st.header("👥 Manajemen Data Siswa (Tambah & Hapus")
+        st.header("👥 Manajemen Data Siswa (Tambah & Hapus)"
         df_siswa = get_data("siswa")
         with st.expander("➕ Tambah Siswa Baru"):
             with st.form("tambah_siswa"):
@@ -200,6 +200,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
