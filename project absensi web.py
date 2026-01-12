@@ -3,14 +3,12 @@ import pandas as pd
 from streamlit_gsheets import GSheetsConnection
 from datetime import datetime
 import io
-import time # Untuk kebutuhan jam digital
 
 # --- KONFIGURASI GOOGLE SHEETS ---
 URL_SHEET = "https://docs.google.com/spreadsheets/d/1__d7A0qCxtkxnJT8oYXbmZfY1GAiFcyB600fBNQaJV8/edit?usp=sharing"
 
-# --- URL LOGO GITHUB ABAH ---
-# Gantilah URL di bawah ini dengan link 'Raw' logo Abah di GitHub
-URL_LOGO = "https://raw.githubusercontent.com/username_abah/nama_repo/main/logo.png"
+# --- URL LOGO GITHUB ABAH (SUDAH LINK RAW) ---
+URL_LOGO = "https://raw.githubusercontent.com/benyroswandi/absensi-nilai-smkyppt/main/logo_yppt.png"
 
 def main():
     st.set_page_config(page_title="SMK YPPT Absensi Online", layout="wide", page_icon="🎓")
@@ -51,6 +49,15 @@ def main():
             padding: 5px;
             border-radius: 10px;
             background: #1e293b;
+            margin-bottom: 10px;
+        }
+        /* Style Logo Sidebar */
+        .sidebar-logo {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            width: 120px;
+            margin-bottom: 10px;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -76,6 +83,7 @@ def main():
             st.markdown("<br><br>", unsafe_allow_html=True) 
             st.markdown(f"""
                 <div style='text-align: center;'>
+                    <img src='{URL_LOGO}' width='100'><br><br>
                     <h1 style='color: #ef4444; margin-bottom: 0;'>🎓 SMK YPPT</h1>
                     <p style='color: #ef4444; font-weight: bold; font-size: 1.1em; margin-top: 0;'>Sistem Absensi & Nilai Online</p>
                     <p style='color: #ef4444; margin-top: 5px; margin-bottom: 5px;'>TP. 2025/2026</p>
@@ -97,11 +105,8 @@ def main():
 
     # --- SIDEBAR KINCLONG (LOGO & JAM) ---
     with st.sidebar:
-        # Tampilkan Logo (Gunakan try-except agar tidak error jika link salah)
-        try:
-            st.image(URL_LOGO, width=150)
-        except:
-            st.markdown("<h2 style='color:white; text-align:center;'>LOGO YPPT</h2>", unsafe_allow_html=True)
+        # Menampilkan Logo di Sidebar
+        st.markdown(f"<img src='{URL_LOGO}' class='sidebar-logo'>", unsafe_allow_html=True)
         
         st.markdown("<h3 style='text-align: center; color: white; margin-bottom:0;'>SMK YPPT</h3>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: #94a3b8;'>TP. 2025/2026</p>", unsafe_allow_html=True)
@@ -191,12 +196,13 @@ def main():
                     st.rerun()
 
         st.divider()
-        for i, row in df_siswa.iterrows():
-            c1, c2, c3, c4 = st.columns([2, 5, 2, 3])
-            c1.write(f"`{row['nis']}`"); c2.write(f"**{row['nama']}**"); c3.write(f"{row['prodi']}")
-            if c4.button(f"🗑️ HAPUS SISWA", key=f"del_{i}"):
-                conn.update(spreadsheet=URL_SHEET, worksheet="siswa", data=df_siswa.drop(i))
-                st.rerun()
+        if not df_siswa.empty:
+            for i, row in df_siswa.iterrows():
+                c1, c2, c3, c4 = st.columns([2, 5, 2, 3])
+                c1.write(f"`{row['nis']}`"); c2.write(f"**{row['nama']}**"); c3.write(f"{row['prodi']}")
+                if c4.button(f"🗑️ HAPUS SISWA", key=f"del_{i}"):
+                    conn.update(spreadsheet=URL_SHEET, worksheet="siswa", data=df_siswa.drop(i))
+                    st.rerun()
 
 if __name__ == "__main__":
     main()
