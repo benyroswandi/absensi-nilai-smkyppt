@@ -7,7 +7,7 @@ import io
 # --- KONFIGURASI GOOGLE SHEETS ---
 URL_SHEET = "https://docs.google.com/spreadsheets/d/1__d7A0qCxtkxnJT8oYXbmZfY1GAiFcyB600fBNQaJV8/edit?usp=sharing"
 
-# --- URL LOGO GITHUB ABAH (SUDAH LINK RAW) ---
+# --- URL LOGO GITHUB ABAH ---
 URL_LOGO = "https://raw.githubusercontent.com/benyroswandi/absensi-nilai-smkyppt/main/logo_yppt.png"
 
 def main():
@@ -56,7 +56,7 @@ def main():
             display: block;
             margin-left: auto;
             margin-right: auto;
-            width: 120px;
+            width: 100px;
             margin-bottom: 10px;
         }
         </style>
@@ -73,20 +73,19 @@ def main():
             else:
                 return pd.DataFrame(columns=["nis", "nama_siswa", "tanggal", "bulan", "absensi", "nilai", "status", "prodi"])
 
-    # --- LOGIN ADMIN ---
+    # --- LOGIN ADMIN (TANPA LOGO) ---
     if "authenticated" not in st.session_state:
         st.session_state["authenticated"] = False
 
     if not st.session_state["authenticated"]:
         empty_col1, center_col, empty_col2 = st.columns([1, 1, 1])
         with center_col:
-            st.markdown("<br><br>", unsafe_allow_html=True) 
+            st.markdown("<br><br><br>", unsafe_allow_html=True) 
             st.markdown(f"""
                 <div style='text-align: center;'>
-                    <img src='{URL_LOGO}' width='100'><br><br>
                     <h1 style='color: #ef4444; margin-bottom: 0;'>🎓 SMK YPPT</h1>
-                    <p style='color: #ef4444; font-weight: bold; font-size: 1.1em; margin-top: 0;'>Sistem Absensi & Nilai Online</p>
-                    <p style='color: #ef4444; margin-top: 5px; margin-bottom: 5px;'>TP. 2025/2026</p>
+                    <p style='color: #ef4444; font-weight: bold; font-size: 1.2em; margin-top: 5px;'>Sistem Absensi & Nilai Online</p>
+                    <p style='color: #ef4444; margin-top: 5px; margin-bottom: 20px;'>TP. 2025/2026</p>
                 </div>
             """, unsafe_allow_html=True)
             
@@ -103,15 +102,12 @@ def main():
                 st.markdown("</div>", unsafe_allow_html=True)
         return
 
-    # --- SIDEBAR KINCLONG (LOGO & JAM) ---
+    # --- SIDEBAR (DENGAN LOGO & JAM) ---
     with st.sidebar:
-        # Menampilkan Logo di Sidebar
         st.markdown(f"<img src='{URL_LOGO}' class='sidebar-logo'>", unsafe_allow_html=True)
-        
         st.markdown("<h3 style='text-align: center; color: white; margin-bottom:0;'>SMK YPPT</h3>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: #94a3b8;'>TP. 2025/2026</p>", unsafe_allow_html=True)
         
-        # Jam Digital di Sidebar
         jam_sekarang = datetime.now().strftime("%H:%M:%S")
         st.markdown(f"<div class='digital-clock'>{jam_sekarang} WIB</div>", unsafe_allow_html=True)
         
@@ -146,8 +142,7 @@ def main():
             list_input = []
             for i, row in df_filtered.iterrows():
                 c1, c2, c3, c4 = st.columns([1.5, 3, 4, 2])
-                c1.write(f"`{row['nis']}`")
-                c2.write(f"**{row['nama']}**")
+                c1.write(f"`{row['nis']}`"); c2.write(f"**{row['nama']}**")
                 stat = c3.radio(f"S_{i}", ["Hadir", "Sakit", "Izin", "Alpa"], horizontal=True, key=f"rad_{i}", label_visibility="collapsed")
                 nil = c4.number_input(f"N_{i}", 0, 100, 0, key=f"num_{i}", label_visibility="collapsed")
                 list_input.append([row['nis'], row['nama'], tgl.strftime('%Y-%m-%d'), tgl.strftime('%B'), stat, nil, stat, row['prodi']])
@@ -182,27 +177,4 @@ def main():
             st.info("Belum ada data.")
 
     elif menu == "👥 Kelola Siswa":
-        st.header("👥 Manajemen Data Siswa")
-        df_siswa = get_data("siswa")
-        with st.expander("➕ Tambah Siswa Baru"):
-            with st.form("tambah_siswa"):
-                c1, c2 = st.columns(2)
-                nis, n = c1.text_input("NIS"), c2.text_input("Nama Lengkap")
-                k, p = c1.selectbox("Kelas", ["10", "11", "12"]), c2.text_input("Prodi", value="T. Listrik")
-                if st.form_submit_button("Simpan Siswa"):
-                    df_baru = pd.DataFrame([[nis, n, k, p]], columns=["nis", "nama", "kelas", "prodi"])
-                    df_final = pd.concat([df_siswa, df_baru], ignore_index=True)
-                    conn.update(spreadsheet=URL_SHEET, worksheet="siswa", data=df_final)
-                    st.rerun()
-
-        st.divider()
-        if not df_siswa.empty:
-            for i, row in df_siswa.iterrows():
-                c1, c2, c3, c4 = st.columns([2, 5, 2, 3])
-                c1.write(f"`{row['nis']}`"); c2.write(f"**{row['nama']}**"); c3.write(f"{row['prodi']}")
-                if c4.button(f"🗑️ HAPUS SISWA", key=f"del_{i}"):
-                    conn.update(spreadsheet=URL_SHEET, worksheet="siswa", data=df_siswa.drop(i))
-                    st.rerun()
-
-if __name__ == "__main__":
-    main()
+        st.header("👥 Manajemen Data Sis
