@@ -1,9 +1,8 @@
 import streamlit as st
 import pandas as pd
 from streamlit_gsheets import GSheetsConnection
-from datetime import datetime
+from datetime import datetime, timedelta # Tambah timedelta untuk selisih waktu
 import io
-import time
 
 # --- KONFIGURASI GOOGLE SHEETS ---
 URL_SHEET = "https://docs.google.com/spreadsheets/d/1__d7A0qCxtkxnJT8oYXbmZfY1GAiFcyB600fBNQaJV8/edit?usp=sharing"
@@ -39,19 +38,6 @@ def main():
         [data-testid="stSidebar"] {
             background-color: #0f172a;
         }
-        /* Style Jam Digital */
-        .digital-clock {
-            font-family: 'Courier New', Courier, monospace;
-            color: #10b981;
-            font-size: 22px;
-            text-align: center;
-            font-weight: bold;
-            border: 2px solid #10b981;
-            padding: 8px;
-            border-radius: 10px;
-            background: #1e293b;
-            margin-bottom: 15px;
-        }
         /* Style Logo Sidebar */
         .sidebar-logo {
             display: block;
@@ -60,10 +46,21 @@ def main():
             width: 100px;
             margin-bottom: 10px;
         }
+        /* Status Login Style */
+        .status-user {
+            color: #10b981;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
         </style>
     """, unsafe_allow_html=True)
 
     conn = st.connection("gsheets", type=GSheetsConnection)
+
+    # --- FUNGSI AMBIL WAKTU WIB ---
+    # Menambah 7 jam dari waktu server (UTC) agar jadi WIB
+    waktu_sekarang = datetime.now() + timedelta(hours=7)
 
     def get_data(nama_sheet):
         try:
@@ -103,22 +100,20 @@ def main():
                 st.markdown("</div>", unsafe_allow_html=True)
         return
 
-    # --- SIDEBAR (LOGIKA JAM DIGITAL JALAN) ---
+    # --- SIDEBAR (JAM DIHAPUS, DIGANTI STATUS) ---
     with st.sidebar:
         st.markdown(f"<img src='{URL_LOGO}' class='sidebar-logo'>", unsafe_allow_html=True)
         st.markdown("<h3 style='text-align: center; color: white; margin-bottom:0;'>SMK YPPT</h3>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: #94a3b8;'>TP. 2025/2026</p>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: #94a3b8; margin-bottom: 5px;'>TP. 2025/2026</p>", unsafe_allow_html=True)
         
-        # Penampung Jam Digital
-        clock_placeholder = st.empty()
-        jam_skrg = datetime.now().strftime("%H:%M:%S")
-        clock_placeholder.markdown(f"<div class='digital-clock'>{jam_skrg} WIB</div>", unsafe_allow_html=True)
+        # Pengganti Jam: Info Login
+        st.markdown(f"<div class='status-user'>🟢 Admin Online<br>{waktu_sekarang.strftime('%d %b %Y')}</div>", unsafe_allow_html=True)
         
         st.divider()
-        menu = st.radio("NAVIGASI MENU", ["📝 Input Absensi", "📊 Monitoring", "👥 Kelola Siswa"])
+        menu = st.sidebar.radio("NAVIGASI MENU", ["📝 Input Absensi", "📊 Monitoring", "👥 Kelola Siswa"])
         st.divider()
         
-        if st.button("🚪 Keluar Aplikasi", use_container_width=True):
+        if st.sidebar.button("🚪 Keluar Aplikasi", use_container_width=True):
             st.session_state["authenticated"] = False
             st.rerun()
 
@@ -134,7 +129,8 @@ def main():
                 prodi_terpilih = st.selectbox("Pilih Prodi/Jurusan:", sorted(df_siswa['prodi'].unique()))
             df_filtered = df_siswa[df_siswa['prodi'] == prodi_terpilih]
             with col_f2:
-                tgl = st.date_input("Tanggal", datetime.now())
+                # Tanggal default sudah disesuaikan ke WIB
+                tgl = st.date_input("Tanggal Pelaksanaan", waktu_sekarang)
             
             st.info(f"📋 Mengabsen {len(df_filtered)} siswa - {prodi_terpilih}")
             st.divider()
