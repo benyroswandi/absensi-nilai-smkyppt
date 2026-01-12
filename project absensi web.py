@@ -75,7 +75,7 @@ def main():
                 st.markdown("""
                     <div class='white-divider'></div>
                     <p style='color: #94a3b8; text-align: center; font-size: 0.9em; margin-bottom: 25px;'>
-                        Silakan masuk dengan akun resmi sekolah
+                        Silakan masuk dengan akun sekolah
                     </p>
                 """, unsafe_allow_html=True)
                 
@@ -200,6 +200,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
