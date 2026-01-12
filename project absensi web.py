@@ -11,34 +11,35 @@ URL_LOGO = "https://raw.githubusercontent.com/benyroswandi/absensi-nilai-smkyppt
 def main():
     st.set_page_config(page_title="SMK YPPT - Absensi & Nilai", layout="wide", page_icon="🎓")
     
-    # --- CSS CUSTOM UNTUK TAMPILAN LOGIN KINCLONG ---
+    # --- CSS CUSTOM: PERBAIKAN TAMPILAN LOGIN ---
     st.markdown("""
         <style>
-        /* Container Utama Login */
         .login-box { 
             background-color: #1e293b; 
-            padding: 30px; 
+            padding: 35px; 
             border-radius: 20px; 
             border: 1px solid #334155;
-            box-shadow: 0px 20px 25px -5px rgba(0, 0, 0, 0.3);
+            box-shadow: 0px 20px 25px -5px rgba(0, 0, 0, 0.4);
+            margin-top: 20px;
         }
-        /* Pemisah Kolom Putih (Divider) */
         .white-divider {
-            height: 2px;
-            background-color: #ffffff;
-            margin: 20px 0;
-            border-radius: 10px;
-            opacity: 0.8;
+            height: 1px;
+            background-color: rgba(255,255,255,0.3);
+            margin: 15px 0 25px 0;
         }
-        /* Style Button */
         .stButton>button { 
             border-radius: 12px; 
             font-weight: bold; 
             background-color: #ef4444; 
             color: white; 
             height: 3.5em;
-            border: none;
             width: 100%;
+            border: none;
+            transition: 0.3s;
+        }
+        .stButton>button:hover {
+            background-color: #b91c1c;
+            transform: scale(1.02);
         }
         [data-testid="stSidebar"] { background-color: #0f172a; }
         .sidebar-logo { display: block; margin-left: auto; margin-right: auto; width: 100px; margin-bottom: 10px; }
@@ -63,25 +64,25 @@ def main():
         _, center_col, _ = st.columns([1, 1.2, 1])
         with center_col:
             st.markdown("<br><br>", unsafe_allow_html=True) 
-            # Header Tanpa Kotak Putih Besar
             st.markdown(f"""
                 <div style='text-align: center;'>
-                    <img src='{URL_LOGO}' width='80'>
-                    <h1 style='color: #ef4444; margin-bottom:0;'>SMK YPPT</h1>
-                    <p style='color: #ffffff; font-size: 1.1em; opacity: 0.9;'>Sistem Absensi & Nilai Online</p>
+                    <img src='{URL_LOGO}' width='90'>
+                    <h1 style='color: #ef4444; margin-top: 10px; margin-bottom:0;'>SMK YPPT</h1>
+                    <p style='color: #ffffff; font-size: 1.1em; opacity: 0.8;'>Sistem Absensi & Nilai Online</p>
                 </div>
             """, unsafe_allow_html=True)
             
+            # KOTAK LOGIN
             with st.container():
                 st.markdown("<div class='login-box'>", unsafe_allow_html=True)
                 
-                # INI PEMISAH KOLOM PUTIH YANG KINCLONG
+                # Teks instruksi sekarang masuk ke dalam kotak
+                st.markdown("<p style='color: #ffffff; text-align: center; font-weight: bold; margin-bottom: 5px;'>ADMINISTRATOR</p>", unsafe_allow_html=True)
                 st.markdown("<div class='white-divider'></div>", unsafe_allow_html=True)
+                st.markdown("<p style='color: #94a3b8; text-align: center; font-size: 0.9em;'>Silakan masuk dengan akun resmi sekolah</p>", unsafe_allow_html=True)
                 
-                st.markdown("<p style='color: #94a3b8; text-align: center;'>Silakan masuk dengan akun admin sekolah</p>", unsafe_allow_html=True)
-                
-                user = st.text_input("Username")
-                pwd = st.text_input("Password", type="password")
+                user = st.text_input("Username", key="user_idx")
+                pwd = st.text_input("Password", type="password", key="pwd_idx")
                 
                 st.markdown("<br>", unsafe_allow_html=True)
                 if st.button("🚀 MASUK KE SISTEM"):
@@ -91,11 +92,9 @@ def main():
                     else:
                         st.error("Username atau Password Salah!")
                 st.markdown("</div>", unsafe_allow_html=True)
-            
-            st.markdown("<p style='text-align: center; color: #64748b; margin-top: 20px;'>Hibah Program oleh: Abah</p>", unsafe_allow_html=True)
         return
 
-    # --- SIDEBAR & MENU UTAMA (Tetap Sama) ---
+    # --- SIDEBAR & MENU UTAMA ---
     with st.sidebar:
         st.markdown(f"<img src='{URL_LOGO}' class='sidebar-logo'>", unsafe_allow_html=True)
         st.markdown("<h3 style='text-align: center; color: white;'>SMK YPPT</h3>", unsafe_allow_html=True)
@@ -107,7 +106,7 @@ def main():
             st.session_state["authenticated"] = False
             st.rerun()
 
-    # --- LOGIKA TIAP MENU (Tetap Sama Seperti Sebelumnya) ---
+    # --- LOGIKA MENU ---
     if menu == "📝 Input Absensi":
         st.header("📝 Input Absensi & Nilai")
         df_siswa = get_data("siswa")
@@ -145,7 +144,7 @@ def main():
                         df_rekap_lama = get_data("rekap")
                         df_final = pd.concat([df_rekap_lama, df_rekap_baru], ignore_index=True)
                         conn.update(spreadsheet=URL_SHEET, worksheet="rekap", data=df_final)
-                        st.success("Data Tersimpan!")
+                        st.success("Data Berhasil Disimpan!")
                         st.balloons()
 
     elif menu == "📊 Monitoring Harian":
