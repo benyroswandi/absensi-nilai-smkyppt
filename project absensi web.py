@@ -31,10 +31,6 @@ def main():
             height: 3em;
             transition: 0.3s;
         }
-        .stButton>button:hover {
-            background-color: #b91c1c;
-            transform: translateY(-2px);
-        }
         [data-testid="stSidebar"] {
             background-color: #0f172a;
         }
@@ -64,7 +60,7 @@ def main():
             if nama_sheet == "siswa":
                 return pd.DataFrame(columns=["nis", "nama", "kelas", "prodi"])
             else:
-                return pd.DataFrame(columns=["nis", "nama_siswa", "tanggal", "bulan", "absensi", "nilai", "status", "prodi"])
+                return pd.DataFrame(columns=["nis", "nama_siswa", "tanggal", "bulan", "absensi", "nilai", "status", "prodi", "nama_guru", "mata_pelajaran"])
 
     # --- LOGIN ADMIN ---
     if "authenticated" not in st.session_state:
@@ -74,14 +70,7 @@ def main():
         empty_col1, center_col, empty_col2 = st.columns([1, 1, 1])
         with center_col:
             st.markdown("<br><br><br>", unsafe_allow_html=True) 
-            st.markdown(f"""
-                <div style='text-align: center;'>
-                    <h1 style='color: #ef4444; margin-bottom: 0;'>🎓 SMK YPPT</h1>
-                    <p style='color: #ef4444; font-weight: bold; font-size: 1.2em; margin-top: 5px;'>Sistem Absensi & Nilai Online</p>
-                    <p style='color: #ef4444; margin-top: 5px; margin-bottom: 20px;'>TP. 2025/2026</p>
-                </div>
-            """, unsafe_allow_html=True)
-            
+            st.markdown(f"<div style='text-align: center;'><h1 style='color: #ef4444;'>🎓 SMK YPPT</h1><p style='color: #ef4444; font-weight: bold;'>Sistem Absensi & Nilai Online</p></div>", unsafe_allow_html=True)
             with st.container():
                 st.markdown("<div class='login-box'>", unsafe_allow_html=True)
                 user = st.text_input("Username Admin")
@@ -98,8 +87,7 @@ def main():
     # --- SIDEBAR ---
     with st.sidebar:
         st.markdown(f"<img src='{URL_LOGO}' class='sidebar-logo'>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: white; margin-bottom:0;'>SMK YPPT</p>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: white; margin-bottom: 5px;'>TP. 2025/2026</p>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center; color: white;'>SMK YPPT</h3>", unsafe_allow_html=True)
         st.markdown(f"<div class='status-user'>🟢 Admin Online<br>{waktu_sekarang.strftime('%d %b %Y')}</div>", unsafe_allow_html=True)
         st.divider()
         menu = st.radio("NAVIGASI MENU", ["📝 Input Absensi", "📊 Monitoring", "📊 Rekap Bulanan", "👥 Kelola Siswa"])
@@ -112,18 +100,31 @@ def main():
     if menu == "📝 Input Absensi":
         st.header("📝 Input Absensi & Nilai")
         df_siswa = get_data("siswa")
+        
         if df_siswa.empty:
             st.warning("Data siswa belum ada.")
         else:
-            col_f1, col_f2 = st.columns(2)
-            with col_f1:
+            # BARIS 1: PRODI & NAMA GURU
+            col_a1, col_a2 = st.columns(2)
+            with col_a1:
                 prodi_terpilih = st.selectbox("Pilih Prodi/Jurusan:", sorted(df_siswa['prodi'].unique()))
-            df_filtered = df_siswa[df_siswa['prodi'] == prodi_terpilih]
-            with col_f2:
+            with col_a2:
+                nama_guru = st.text_input("Nama Guru Pengajar:", placeholder="Contoh: Bpk. Beny")
+
+            # BARIS 2: TANGGAL & MATA PELAJARAN
+            col_b1, col_b2 = st.columns(2)
+            with col_b1:
                 tgl = st.date_input("Tanggal Pelaksanaan", waktu_sekarang)
+            with col_b2:
+                mapel = st.text_input("Mata Pelajaran:", placeholder="Contoh: Instalasi Motor Listrik")
             
+            df_filtered = df_siswa[df_siswa['prodi'] == prodi_terpilih]
             st.info(f"📋 Mengabsen {len(df_filtered)} siswa - {prodi_terpilih}")
             st.divider()
+
+            if not nama_guru or not mapel:
+                st.warning("⚠️ Mohon isi Nama Guru dan Mata Pelajaran terlebih dahulu!")
+
             h1, h2, h3, h4 = st.columns([1.5, 3, 4.5, 1.5])
             h1.markdown("**NIS**"); h2.markdown("**Nama Siswa**"); h3.markdown("**Status**"); h4.markdown("**Nilai**")
             
@@ -133,15 +134,19 @@ def main():
                 c1.write(f"`{row['nis']}`"); c2.write(f"**{row['nama']}**")
                 stat = c3.radio(f"S_{i}", ["Hadir", "Sakit", "Izin", "Alpa", "Kabur"], horizontal=True, key=f"rad_{i}", label_visibility="collapsed")
                 nil = c4.number_input(f"N_{i}", 0, 100, 0, key=f"num_{i}", label_visibility="collapsed")
-                list_input.append([row['nis'], row['nama'], tgl.strftime('%Y-%m-%d'), tgl.strftime('%B'), stat, nil, stat, row['prodi']])
+                # Data baru ditambahkan di sini: nama_guru dan mapel
+                list_input.append([row['nis'], row['nama'], tgl.strftime('%Y-%m-%d'), tgl.strftime('%B'), stat, nil, stat, row['prodi'], nama_guru, mapel])
 
             if st.button("💾 SIMPAN DATA SEKARANG", type="primary", use_container_width=True):
-                with st.spinner("Proses simpan..."):
-                    df_rekap_baru = pd.DataFrame(list_input, columns=["nis", "nama_siswa", "tanggal", "bulan", "absensi", "nilai", "status", "prodi"])
-                    df_rekap_lama = get_data("rekap")
-                    df_final = pd.concat([df_rekap_lama, df_rekap_baru], ignore_index=True)
-                    conn.update(spreadsheet=URL_SHEET, worksheet="rekap", data=df_final)
-                    st.success("Data berhasil disimpan!")
+                if not nama_guru or not mapel:
+                    st.error("Gagal simpan! Nama Guru dan Mata Pelajaran wajib diisi.")
+                else:
+                    with st.spinner("Proses simpan..."):
+                        df_rekap_baru = pd.DataFrame(list_input, columns=["nis", "nama_siswa", "tanggal", "bulan", "absensi", "nilai", "status", "prodi", "nama_guru", "mata_pelajaran"])
+                        df_rekap_lama = get_data("rekap")
+                        df_final = pd.concat([df_rekap_lama, df_rekap_baru], ignore_index=True)
+                        conn.update(spreadsheet=URL_SHEET, worksheet="rekap", data=df_final)
+                        st.success(f"Data absensi {mapel} berhasil disimpan!")
 
     elif menu == "📊 Monitoring":
         st.header("📊 Riwayat Harian (Semua Data)")
@@ -161,33 +166,17 @@ def main():
             with col_r2:
                 prd = st.selectbox("Pilih Prodi:", ["Semua Prodi"] + sorted(df_rekap['prodi'].unique().tolist()))
             
-            df_filtered_rekap = df_rekap[df_rekap['bulan'] == bln]
+            df_f = df_rekap[df_rekap['bulan'] == bln]
             if prd != "Semua Prodi":
-                df_filtered_rekap = df_filtered_rekap[df_filtered_rekap['prodi'] == prd]
+                df_f = df_f[df_f['prodi'] == prd]
             
-            # PROSES PIVOT (MENGHITUNG STATUS)
-            rekap_final = df_filtered_rekap.groupby(['nis', 'nama_siswa', 'prodi', 'absensi']).size().unstack(fill_value=0).reset_index()
-            
-            # Pastikan semua kolom status ada meskipun tidak ada datanya
+            rekap_final = df_f.groupby(['nis', 'nama_siswa', 'prodi', 'absensi']).size().unstack(fill_value=0).reset_index()
             for col in ["Hadir", "Sakit", "Izin", "Alpa", "Kabur"]:
-                if col not in rekap_final.columns:
-                    rekap_final[col] = 0
+                if col not in rekap_final.columns: rekap_final[col] = 0
             
-            # Hitung Rata-rata Nilai
-            rerata_nilai = df_filtered_rekap.groupby('nis')['nilai'].mean().reset_index()
-            rekap_final = rekap_final.merge(rerata_nilai, on='nis')
-            rekap_final.rename(columns={'nilai': 'Rata-rata Nilai'}, inplace=True)
-
+            rerata = df_f.groupby('nis')['nilai'].mean().reset_index()
+            rekap_final = rekap_final.merge(rerata, on='nis').rename(columns={'nilai': 'Rata-rata Nilai'})
             st.dataframe(rekap_final, use_container_width=True)
-            
-            # Button Download
-            buffer = io.BytesIO()
-            with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
-                rekap_final.to_excel(writer, index=False, sheet_name='RekapBulanan')
-            st.download_button(f"📥 Download Rekap {bln} ({prd})", data=buffer.getvalue(), 
-                               file_name=f"Rekap_{bln}_{prd}.xlsx", mime="application/vnd.ms-excel")
-        else:
-            st.warning("Data rekapan masih kosong.")
 
     elif menu == "👥 Kelola Siswa":
         st.header("👥 Manajemen Data Siswa")
@@ -217,5 +206,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
