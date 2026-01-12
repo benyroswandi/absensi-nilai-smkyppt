@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from streamlit_gsheets import GSheetsConnection
-from datetime import datetime, timedelta # Tambah timedelta untuk selisih waktu
+from datetime import datetime, timedelta
 import io
 
 # --- KONFIGURASI GOOGLE SHEETS ---
@@ -38,7 +38,6 @@ def main():
         [data-testid="stSidebar"] {
             background-color: #0f172a;
         }
-        /* Style Logo Sidebar */
         .sidebar-logo {
             display: block;
             margin-left: auto;
@@ -46,7 +45,6 @@ def main():
             width: 100px;
             margin-bottom: 10px;
         }
-        /* Status Login Style */
         .status-user {
             color: #10b981;
             font-size: 14px;
@@ -57,9 +55,6 @@ def main():
     """, unsafe_allow_html=True)
 
     conn = st.connection("gsheets", type=GSheetsConnection)
-
-    # --- FUNGSI AMBIL WAKTU WIB ---
-    # Menambah 7 jam dari waktu server (UTC) agar jadi WIB
     waktu_sekarang = datetime.now() + timedelta(hours=7)
 
     def get_data(nama_sheet):
@@ -100,20 +95,16 @@ def main():
                 st.markdown("</div>", unsafe_allow_html=True)
         return
 
-    # --- SIDEBAR (JAM DIHAPUS, DIGANTI STATUS) ---
+    # --- SIDEBAR ---
     with st.sidebar:
         st.markdown(f"<img src='{URL_LOGO}' class='sidebar-logo'>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: white; margin-bottom:0;'>SMK YPPT</p>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center; color: white; margin-bottom:0;'>SMK YPPT</h3>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: #94a3b8; margin-bottom: 5px;'>TP. 2025/2026</p>", unsafe_allow_html=True)
-        
-        # Pengganti Jam: Info Login
         st.markdown(f"<div class='status-user'>🟢 Admin Online<br>{waktu_sekarang.strftime('%d %b %Y')}</div>", unsafe_allow_html=True)
-        
         st.divider()
-        menu = st.sidebar.radio("NAVIGASI MENU", ["📝 Input Absensi", "📊 Monitoring", "👥 Kelola Siswa"])
+        menu = st.radio("NAVIGASI MENU", ["📝 Input Absensi", "📊 Monitoring", "👥 Kelola Siswa"])
         st.divider()
-        
-        if st.sidebar.button("🚪 Keluar Aplikasi", use_container_width=True):
+        if st.button("🚪 Keluar Aplikasi", use_container_width=True):
             st.session_state["authenticated"] = False
             st.rerun()
 
@@ -129,12 +120,10 @@ def main():
                 prodi_terpilih = st.selectbox("Pilih Prodi/Jurusan:", sorted(df_siswa['prodi'].unique()))
             df_filtered = df_siswa[df_siswa['prodi'] == prodi_terpilih]
             with col_f2:
-                # Tanggal default sudah disesuaikan ke WIB
                 tgl = st.date_input("Tanggal Pelaksanaan", waktu_sekarang)
             
             st.info(f"📋 Mengabsen {len(df_filtered)} siswa - {prodi_terpilih}")
             st.divider()
-            
             h1, h2, h3, h4 = st.columns([1.5, 3, 4, 2])
             h1.markdown("**NIS**"); h2.markdown("**Nama Siswa**"); h3.markdown("**Status**"); h4.markdown("**Nilai**")
             
@@ -155,14 +144,13 @@ def main():
                     st.success("Data berhasil disimpan!")
 
     elif menu == "📊 Monitoring":
-        st.header("📊 Rekapitulasi Data & Edit")
+        st.header("📊 Rekapitulasi Data")
         df_rekap = get_data("rekap")
         if not df_rekap.empty:
             col_d1, col_d2 = st.columns([3, 1])
             with col_d1:
                 pilihan = st.selectbox("Tampilkan Berdasarkan Prodi:", ["Semua Prodi"] + sorted(df_rekap['prodi'].unique().tolist()))
             df_tampil = df_rekap if pilihan == "Semua Prodi" else df_rekap[df_rekap['prodi'] == pilihan]
-            
             with col_d2:
                 buffer = io.BytesIO()
                 with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
@@ -170,14 +158,15 @@ def main():
                 st.download_button(label="📥 Download Excel", data=buffer.getvalue(), 
                                    file_name=f"rekap_yppt_{datetime.now().strftime('%d%m%Y')}.xlsx",
                                    mime="application/vnd.ms-excel")
-            
             st.data_editor(df_rekap, use_container_width=True, num_rows="dynamic")
         else:
             st.info("Belum ada data.")
 
     elif menu == "👥 Kelola Siswa":
-        st.header("👥 Manajemen Data Siswa >> Tambah & Hapus <<")
+        st.header("👥 Manajemen Data Siswa")
         df_siswa = get_data("siswa")
+        
+        # 1. Fitur Tambah Siswa
         with st.expander("➕ Tambah Siswa Baru"):
             with st.form("tambah_siswa"):
                 c1, c2 = st.columns(2)
@@ -190,19 +179,35 @@ def main():
                     st.rerun()
 
         st.divider()
+        
+        # 2. Fitur Filter Hapus Siswa (Ini yang Abah minta)
+        st.subheader("🗑️ Hapus Data Siswa")
         if not df_siswa.empty:
-            for i, row in df_siswa.iterrows():
+            prodi_list = sorted(df_siswa['prodi'].unique().tolist())
+            filter_prodi = st.selectbox("Filter Prodi untuk Hapus:", ["Tampilkan Semua"] + prodi_list)
+            
+            # Filter DataFrame berdasarkan pilihan
+            if filter_prodi == "Tampilkan Semua":
+                df_view = df_siswa
+            else:
+                df_view = df_siswa[df_siswa['prodi'] == filter_prodi]
+            
+            st.write(f"Menampilkan {len(df_view)} siswa.")
+            
+            # Tampilkan list siswa hasil filter
+            for i, row in df_view.iterrows():
                 c1, c2, c3, c4 = st.columns([2, 5, 2, 3])
-                c1.write(f"`{row['nis']}`"); c2.write(f"**{row['nama']}**"); c3.write(f"{row['prodi']}")
-                if c4.button(f"🗑️ HAPUS SISWA", key=f"del_{i}"):
-                    conn.update(spreadsheet=URL_SHEET, worksheet="siswa", data=df_siswa.drop(i))
+                c1.write(f"`{row['nis']}`")
+                c2.write(f"**{row['nama']}**")
+                c3.write(f"{row['prodi']}")
+                # Tombol hapus tetap menggunakan index asli 'i' dari df_siswa
+                if c4.button(f"🗑️ HAPUS", key=f"del_{i}"):
+                    df_final_hapus = df_siswa.drop(i)
+                    conn.update(spreadsheet=URL_SHEET, worksheet="siswa", data=df_final_hapus)
+                    st.success(f"Siswa {row['nama']} berhasil dihapus!")
                     st.rerun()
+        else:
+            st.info("Data siswa kosong.")
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
