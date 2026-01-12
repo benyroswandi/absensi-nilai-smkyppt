@@ -154,7 +154,7 @@ def main():
                     conn.update(spreadsheet=URL_SHEET, worksheet="rekap", data=df_final)
                     st.success("Data berhasil disimpan!")
 
-    elif menu == "📊 Monitoring":
+    elif menu == "📊 Monitoring & Edit":
         st.header("📊 Rekapitulasi Data")
         df_rekap = get_data("rekap")
         if not df_rekap.empty:
@@ -176,7 +176,7 @@ def main():
             st.info("Belum ada data.")
 
     elif menu == "👥 Kelola Siswa":
-        st.header("👥 Manajemen Data Siswa")
+        st.header("👥 Manajemen Data Siswa ( Tambah dan Hapus Siswa")
         df_siswa = get_data("siswa")
         with st.expander("➕ Tambah Siswa Baru"):
             with st.form("tambah_siswa"):
@@ -200,4 +200,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
