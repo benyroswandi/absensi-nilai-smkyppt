@@ -3,6 +3,7 @@ import pandas as pd
 from streamlit_gsheets import GSheetsConnection
 from datetime import datetime
 import io
+import time
 
 # --- KONFIGURASI GOOGLE SHEETS ---
 URL_SHEET = "https://docs.google.com/spreadsheets/d/1__d7A0qCxtkxnJT8oYXbmZfY1GAiFcyB600fBNQaJV8/edit?usp=sharing"
@@ -42,14 +43,14 @@ def main():
         .digital-clock {
             font-family: 'Courier New', Courier, monospace;
             color: #10b981;
-            font-size: 20px;
+            font-size: 22px;
             text-align: center;
             font-weight: bold;
-            border: 1px solid #1e293b;
-            padding: 5px;
+            border: 2px solid #10b981;
+            padding: 8px;
             border-radius: 10px;
             background: #1e293b;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
         /* Style Logo Sidebar */
         .sidebar-logo {
@@ -73,7 +74,7 @@ def main():
             else:
                 return pd.DataFrame(columns=["nis", "nama_siswa", "tanggal", "bulan", "absensi", "nilai", "status", "prodi"])
 
-    # --- LOGIN ADMIN (TANPA LOGO) ---
+    # --- LOGIN ADMIN ---
     if "authenticated" not in st.session_state:
         st.session_state["authenticated"] = False
 
@@ -102,14 +103,16 @@ def main():
                 st.markdown("</div>", unsafe_allow_html=True)
         return
 
-    # --- SIDEBAR (DENGAN LOGO & JAM) ---
+    # --- SIDEBAR (LOGIKA JAM DIGITAL JALAN) ---
     with st.sidebar:
         st.markdown(f"<img src='{URL_LOGO}' class='sidebar-logo'>", unsafe_allow_html=True)
         st.markdown("<h3 style='text-align: center; color: white; margin-bottom:0;'>SMK YPPT</h3>", unsafe_allow_html=True)
         st.markdown("<p style='text-align: center; color: #94a3b8;'>TP. 2025/2026</p>", unsafe_allow_html=True)
         
-        jam_sekarang = datetime.now().strftime("%H:%M:%S")
-        st.markdown(f"<div class='digital-clock'>{jam_sekarang} WIB</div>", unsafe_allow_html=True)
+        # Penampung Jam Digital
+        clock_placeholder = st.empty()
+        jam_skrg = datetime.now().strftime("%H:%M:%S")
+        clock_placeholder.markdown(f"<div class='digital-clock'>{jam_skrg} WIB</div>", unsafe_allow_html=True)
         
         st.divider()
         menu = st.radio("NAVIGASI MENU", ["📝 Input Absensi", "📊 Monitoring", "👥 Kelola Siswa"])
