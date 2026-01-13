@@ -65,7 +65,7 @@ def main():
                 pwd = st.text_input("Password", type="password", key="pwd_idx")
                 
                 st.markdown("<br>", unsafe_allow_html=True)
-                if st.button("🚀 MASUK KE SISTEM"):
+                if st.button("MASUK KE SISTEM"):
                     if user == "admin" and pwd == "yppt2026":
                         st.session_state["authenticated"] = True
                         st.rerun()
@@ -199,6 +199,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
