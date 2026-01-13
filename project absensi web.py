@@ -92,6 +92,7 @@ def main():
         st.markdown(f"<div class='status-user'>🟢 Status: Online<br>{waktu_sekarang.strftime('%d %b %Y')}</div>", unsafe_allow_html=True)
         st.divider()
         # ... lanjut ke menu radio ...        # ... lanjut ke menu radio ...        menu = st.radio("MENU UTAMA", ["📝 Input Absensi", "📊 Monitoring Harian", "📊 Rekap Bulanan", "👥 Kelola Siswa"])
+        menu = st.radio("MENU UTAMA", ["📝 Input Absensi", "📊 Monitoring Harian", "📊 Rekap Bulanan", "👥 Kelola Siswa"])
         st.divider()
         if st.button("🚪 Keluar", use_container_width=True):
             st.session_state["authenticated"] = False
@@ -204,6 +205,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
