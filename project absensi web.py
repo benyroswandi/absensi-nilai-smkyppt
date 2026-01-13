@@ -11,10 +11,17 @@ URL_LOGO = "https://raw.githubusercontent.com/benyroswandi/absensi-nilai-smkyppt
 def main():
     st.set_page_config(page_title="SMK YPPT - Absensi & Nilai", layout="wide", page_icon="🎓")
     
-    # --- CSS CUSTOM: PERBAIKAN TAMPILAN LOGIN ---
+    # --- CSS CUSTOM: KINCLONG & PROFESIONAL ---
     st.markdown("""
         <style>
-        
+        .login-box { 
+            background-color: #1e293b; 
+            padding: 35px; 
+            border-radius: 20px; 
+            border: 1px solid #334155;
+            box-shadow: 0px 20px 25px -5px rgba(0, 0, 0, 0.4);
+            margin-top: 20px;
+        }
         .white-divider {
             height: 1px;
             background-color: rgba(255,255,255,0.3);
@@ -57,7 +64,6 @@ def main():
         _, center_col, _ = st.columns([1, 1.2, 1])
         with center_col:
             st.markdown("<br><br>", unsafe_allow_html=True) 
-            # Header Logo & Judul Sekolah (Di luar wadah)
             st.markdown(f"""
                 <div style='text-align: center;'>
                     <img src='{URL_LOGO}' width='90'>
@@ -66,20 +72,13 @@ def main():
                 </div>
             """, unsafe_allow_html=True)
             
-            # --- MULAI WADAH LOGIN ---
             with st.container():
-                # Membuka wadah biru gelap
                 st.markdown("<div class='login-box'>", unsafe_allow_html=True)
+                # Judul Administrator di dalam wadah
+                st.markdown("<h3 style='color: white; text-align: center; margin-top: 0;'>ADMINISTRATOR</h3>", unsafe_allow_html=True)
+                st.markdown("<div class='white-divider'></div>", unsafe_allow_html=True)
+                st.markdown("<p style='color: #94a3b8; text-align: center; font-size: 0.9em; margin-bottom: 25px;'>Silakan masuk dengan akun sekolah</p>", unsafe_allow_html=True)
                 
-                # SEKARANG ADMINISTRATOR SUDAH DI DALAM WADAH
-                st.markdown("""
-                    <div class='white-divider'></div>
-                    <p style='color: #94a3b8; text-align: center; font-size: 0.9em; margin-bottom: 25px;'>
-                        Silakan masuk dengan akun sekolah
-                    </p>
-                """, unsafe_allow_html=True)
-                
-                # Input Username & Password di dalam wadah
                 user = st.text_input("Username", key="user_idx")
                 pwd = st.text_input("Password", type="password", key="pwd_idx")
                 
@@ -90,10 +89,9 @@ def main():
                         st.rerun()
                     else:
                         st.error("Username atau Password Salah!")
-                
-                # Menutup wadah biru gelap
                 st.markdown("</div>", unsafe_allow_html=True)
         return
+
     # --- SIDEBAR & MENU UTAMA ---
     with st.sidebar:
         st.markdown(f"<img src='{URL_LOGO}' class='sidebar-logo'>", unsafe_allow_html=True)
@@ -148,9 +146,19 @@ def main():
                         st.balloons()
 
     elif menu == "📊 Monitoring Harian":
-        st.header("📊 Riwayat Absensi")
+        st.header("📊 Riwayat Absensi & Nilai")
         df_rekap = get_data("rekap")
         if not df_rekap.empty:
+            # Tombol Download Excel Harian
+            col_d1, col_d2 = st.columns([3, 1])
+            with col_d2:
+                buffer = io.BytesIO()
+                with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+                    df_rekap.to_excel(writer, index=False, sheet_name='Monitoring')
+                st.download_button(label="📥 Download Excel Harian", data=buffer.getvalue(), 
+                                   file_name=f"Absensi_Harian_{datetime.now().strftime('%d%m%Y')}.xlsx",
+                                   mime="application/vnd.ms-excel")
+            
             st.data_editor(df_rekap, use_container_width=True)
         else:
             st.info("Belum ada riwayat.")
@@ -200,7 +208,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
