@@ -56,7 +56,7 @@ def main():
             """, unsafe_allow_html=True)
             
             with st.container():
-                st.markdown("<div class='login-box'>", unsafe_allow_html=True)
+                
                 # Judul Administrator di dalam wadah
                 st.markdown("<div class='white-divider'></div>", unsafe_allow_html=True)
                 st.markdown("<p style='color: #94a3b8; text-align: center; font-size: 0.9em; margin-bottom: 25px;'>Silakan masuk dengan akun sekolah</p>", unsafe_allow_html=True)
@@ -199,6 +199,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
