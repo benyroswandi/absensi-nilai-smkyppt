@@ -84,12 +84,21 @@ def main():
         return
 
     # --- SIDEBAR & MENU UTAMA ---
-    with st.sidebar:
+        with st.sidebar:
         st.markdown(f"<img src='{URL_LOGO}' class='sidebar-logo'>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: white; margin-bottom: 0;'>SMK YPPT</p>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: white; margin-top: 0;'>TERAKREDITASI A</p>", unsafe_allow_html=True)
+    
+        # INI KODING YANG RAPAT DAN PROPORSIONAL
+        st.markdown("""
+            <div style='text-align: center; color: white; margin-bottom: 20px;'>
+                <h3 style='margin-bottom: 0; color: white;'>SMK YPPT</h3>
+                <p style='margin-top: 0; font-size: 0.8em; opacity: 0.7; letter-spacing: 2px;'>TERAKREDITASI A</p>
+            </div>
+        """, unsafe_allow_html=True)
+        
         st.markdown(f"<div class='status-user'>🟢 Status: Online<br>{waktu_sekarang.strftime('%d %b %Y')}</div>", unsafe_allow_html=True)
         st.divider()
+        # ... sisa menu lainnya
+            
         menu = st.radio("MENU UTAMA", ["📝 Input Absensi", "📊 Monitoring Harian", "📊 Rekap Bulanan", "👥 Kelola Siswa"])
         st.divider()
         if st.button("🚪 Keluar", use_container_width=True):
@@ -224,6 +233,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
