@@ -119,24 +119,48 @@ def main():
             else:
                 h1, h2, h3, h4 = st.columns([1.5, 3, 4.5, 1.5])
                 h1.markdown("**NIS**"); h2.markdown("**Nama Siswa**"); h3.markdown("**Status**"); h4.markdown("**Nilai**")
-                
+                # --- BAGIAN TABEL INPUT DI MENU INPUT ABSENSI ---
                 list_input = []
+                input_lengkap = True # Cek apakah semua sudah diisi
+
                 for i, row in df_filtered.iterrows():
                     c1, c2, c3, c4 = st.columns([1.5, 3, 4.5, 1.5])
-                    c1.write(f"`{row['nis']}`"); c2.write(f"**{row['nama']}**")
-                    stat = c3.radio(f"S_{i}", ["Hadir", "Sakit", "Izin", "Alpa", "Kabur"], horizontal=True, key=f"rad_{i}", label_visibility="collapsed")
+                    c1.write(f"`{row['nis']}`")
+                    c2.write(f"**{row['nama']}**")
+                   
+                    # Sekarang index=None artinya tidak ada yang terpilih otomatis
+                    stat = c3.radio(
+                        f"S_{i}", 
+                        ["Hadir", "Sakit", "Izin", "Alpa", "Kabur"], 
+                        horizontal=True, 
+                        key=f"rad_{i}", 
+                        label_visibility="collapsed",
+                        index=None 
+                    )
+                    
                     nil = c4.number_input(f"N_{i}", 0, 100, 0, key=f"num_{i}", label_visibility="collapsed")
+                    
+                    # Validasi: Jika ada yang None, maka belum lengkap
+                    if stat is None:
+                        input_lengkap = False
+                    
                     list_input.append([row['nis'], row['nama'], tgl.strftime('%Y-%m-%d'), tgl.strftime('%B'), stat, nil, stat, row['prodi'], nama_guru, mapel])
 
+                st.divider()
+                
+                # Tombol Simpan dengan Proteksi
                 if st.button("💾 SIMPAN DATA", type="primary", use_container_width=True):
-                    with st.spinner("Menyimpan..."):
-                        df_rekap_baru = pd.DataFrame(list_input, columns=["nis", "nama_siswa", "tanggal", "bulan", "absensi", "nilai", "status", "prodi", "nama_guru", "mata_pelajaran"])
-                        df_rekap_lama = get_data("rekap")
-                        df_final = pd.concat([df_rekap_lama, df_rekap_baru], ignore_index=True)
-                        conn.update(spreadsheet=URL_SHEET, worksheet="rekap", data=df_final)
-                        st.success("Data Berhasil Disimpan!")
-                        st.balloons()
-
+                    if not input_lengkap:
+                        st.error("⚠️ Waduh Bah, ada siswa yang belum diisi absennya! Mohon cek lagi ya.")
+                    else:
+                        with st.spinner("Menyimpan..."):
+                            df_rekap_baru = pd.DataFrame(list_input, columns=["nis", "nama_siswa", "tanggal", "bulan", "absensi", "nilai", "status", "prodi", "nama_guru", "mata_pelajaran"])
+                            df_rekap_lama = get_data("rekap")
+                            df_final = pd.concat([df_rekap_lama, df_rekap_baru], ignore_index=True)
+                            conn.update(spreadsheet=URL_SHEET, worksheet="rekap", data=df_final)
+                            st.success("Mantap! Data Berhasil Disimpan.")
+                            st.balloons()
+                            
     elif menu == "📊 Monitoring Harian":
         st.header("📊 Riwayat Absensi & Nilai")
         df_rekap = get_data("rekap")
@@ -200,6 +224,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
