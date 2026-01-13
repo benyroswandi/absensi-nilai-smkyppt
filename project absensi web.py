@@ -75,18 +75,23 @@ def main():
         return
 
     # --- SIDEBAR & MENU UTAMA ---
+    # --- SIDEBAR & MENU UTAMA ---
     with st.sidebar:
         st.markdown(f"<img src='{URL_LOGO}' class='sidebar-logo'>", unsafe_allow_html=True)
-        # Nama Sekolah & Akreditasi Rapat
+        
+        # Nama Sekolah & Akreditasi Warna Emas
         st.markdown("""
-            <div style='text-align: center; color: white; line-height: 1.2;'>
-                <b style='font-size: 18px;'>SMK YPPT</b><br>
-                <span style='font-size: 14px; opacity: 0.8;'>TERAKREDITASI A</span>
+            <div style='text-align: center; color: white; margin-bottom: 15px;'>
+                <h3 style='margin-bottom: 0; color: white;'>SMK YPPT</h3>
+                <p style='margin-top: 0; font-size: 0.85em; color: #FFD700; font-weight: bold; letter-spacing: 2px;'>
+                    TERAKREDITASI A
+                </p>
             </div>
         """, unsafe_allow_html=True)
+    
         st.markdown(f"<div class='status-user'>🟢 Status: Online<br>{waktu_sekarang.strftime('%d %b %Y')}</div>", unsafe_allow_html=True)
         st.divider()
-        menu = st.radio("MENU UTAMA", ["📝 Input Absensi", "📊 Monitoring Harian", "📊 Rekap Bulanan", "👥 Kelola Siswa"])
+        # ... lanjut ke menu radio ...        # ... lanjut ke menu radio ...        menu = st.radio("MENU UTAMA", ["📝 Input Absensi", "📊 Monitoring Harian", "📊 Rekap Bulanan", "👥 Kelola Siswa"])
         st.divider()
         if st.button("🚪 Keluar", use_container_width=True):
             st.session_state["authenticated"] = False
@@ -199,6 +204,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
