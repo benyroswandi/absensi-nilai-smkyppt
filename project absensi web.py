@@ -79,9 +79,9 @@ def main():
         st.markdown(f"<img src='{URL_LOGO}' class='sidebar-logo'>", unsafe_allow_html=True)
         # Nama Sekolah & Akreditasi Rapat
         st.markdown("""
-            <div style='text-align: center; color: white; margin-bottom: 15px;'>
-                <h3 style='margin-bottom: 0; color: white;'>SMK YPPT</h3>
-                <p style='margin-top: 0; font-size: 0.8em; opacity: 0.7; letter-spacing: 1px;'>TERAKREDITASI A</p>
+            <div style='text-align: center; color: white; line-height: 1.2;'>
+                <b style='font-size: 18px;'>SMK YPPT</b><br>
+                <span style='font-size: 14px; opacity: 0.8;'>TERAKREDITASI A</span>
             </div>
         """, unsafe_allow_html=True)
         st.markdown(f"<div class='status-user'>🟢 Status: Online<br>{waktu_sekarang.strftime('%d %b %Y')}</div>", unsafe_allow_html=True)
@@ -199,5 +199,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
