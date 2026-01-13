@@ -13,15 +13,6 @@ def main():
     
     # --- CSS CUSTOM: KINCLONG & PROFESIONAL ---
     st.markdown("""
-        <style>
-        .login-box { 
-            background-color: #1e293b; 
-            padding: 35px; 
-            border-radius: 20px; 
-            border: 1px solid #334155;
-            box-shadow: 0px 20px 25px -5px rgba(0, 0, 0, 0.4);
-            margin-top: 20px;
-        }
         .white-divider {
             height: 1px;
             background-color: rgba(255,255,255,0.3);
@@ -66,7 +57,6 @@ def main():
             with st.container():
                 st.markdown("<div class='login-box'>", unsafe_allow_html=True)
                 # Judul Administrator di dalam wadah
-                st.markdown("<h3 style='color: white; text-align: center; margin-top: 0; margin-bottom:0;'>ADMINISTRATOR</h3>", unsafe_allow_html=True)
                 st.markdown("<div class='white-divider'></div>", unsafe_allow_html=True)
                 st.markdown("<p style='color: #94a3b8; text-align: center; font-size: 0.9em; margin-bottom: 25px;'>Silakan masuk dengan akun sekolah</p>", unsafe_allow_html=True)
                 
@@ -208,3 +198,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
