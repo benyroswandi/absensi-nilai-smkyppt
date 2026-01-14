@@ -35,10 +35,12 @@ def main():
 
     def get_data(nama_sheet):
         try:
-            return conn.read(spreadsheet=URL_SHEET, worksheet=nama_sheet, ttl=0)
-        except:
+            # Tambahkan ttl supaya tidak gampang putus koneksinya
+            return conn.read(spreadsheet=URL_SHEET, worksheet=nama_sheet, ttl="10m")
+        except Exception as e:
+            st.error(f"Koneksi Sheets Terputus: {e}")
             return pd.DataFrame()
-
+            
     # --- HALAMAN LOGIN ---
     if "authenticated" not in st.session_state:
         st.session_state["authenticated"] = False
@@ -102,6 +104,7 @@ def main():
     if menu == "📝 Input Absensi":
         st.header("📝 Input Absensi & Nilai")
         df_siswa = get_data("siswa")
+        
         if df_siswa.empty:
             st.warning("Data siswa belum ada.")
         else:
@@ -119,32 +122,38 @@ def main():
             if not nama_guru or not mapel:
                 st.warning("⚠️ Mohon isi Nama Guru dan Mata Pelajaran.")
             else:
-                h1, h2, h3, h4 = st.columns([1.5, 3, 4.5, 1.5])
-                h1.markdown("**NIS**"); h2.markdown("**Nama Siswa**"); h3.markdown("**Status**"); h4.markdown("**Nilai**")
-                
-                list_input = []
-                input_lengkap = True 
-
-                for i, row in df_filtered.iterrows():
-                    c1, c2, c3, c4 = st.columns([1.5, 3, 4.5, 1.5])
-                    c1.write(f"`{row['nis']}`"); c2.write(f"**{row['nama']}**")
-                    stat = c3.radio(f"S_{i}", ["Hadir", "Sakit", "Izin", "Alpa", "Kabur"], horizontal=True, key=f"rad_{i}", label_visibility="collapsed", index=None)
-                    nil = c4.number_input(f"N_{i}", 0, 100, 0, key=f"num_{i}", label_visibility="collapsed")
+                # --- GUNAKAN FORM SUPAYA DATA TIDAK PUTUS DI TENGAH ---
+                with st.form("form_absen", clear_on_submit=True):
+                    h1, h2, h3, h4 = st.columns([1.5, 3, 4.5, 1.5])
+                    h1.markdown("**NIS**"); h2.markdown("**Nama**"); h3.markdown("**Status**"); h4.markdown("**Nilai**")
                     
-                    if stat is None: input_lengkap = False
-                    list_input.append([row['nis'], row['nama'], tgl.strftime('%Y-%m-%d'), tgl.strftime('%B'), stat, nil, stat, row['prodi'], nama_guru, mapel])
+                    list_input = []
+                    for i, row in df_filtered.iterrows():
+                        c1, c2, c3, c4 = st.columns([1.5, 3, 4.5, 1.5])
+                        c1.write(f"`{row['nis']}`")
+                        c2.write(f"**{row['nama']}**")
+                        
+                        stat = c3.radio(f"S_{i}", ["Hadir", "Sakit", "Izin", "Alpa", "Kabur"], 
+                                        horizontal=True, key=f"rad_{i}", label_visibility="collapsed", index=None)
+                        nil = c4.number_input(f"N_{i}", 0, 100, 0, key=f"num_{i}", label_visibility="collapsed")
+                        
+                        list_input.append([row['nis'], row['nama'], tgl.strftime('%Y-%m-%d'), tgl.strftime('%B'), stat, nil, stat, row['prodi'], nama_guru, mapel])
 
-                if st.button("💾 SIMPAN DATA", type="primary", use_container_width=True):
-                    if not input_lengkap:
-                        st.error("⚠️ Ada siswa yang belum diabsen! Mohon lengkapi semua baris.")
-                    else:
-                        with st.spinner("Menyimpan ke sistem..."):
-                            df_rekap_baru = pd.DataFrame(list_input, columns=["nis", "nama_siswa", "tanggal", "bulan", "absensi", "nilai", "status", "prodi", "nama_guru", "mata_pelajaran"])
-                            df_rekap_lama = get_data("rekap")
-                            conn.update(spreadsheet=URL_SHEET, worksheet="rekap", data=pd.concat([df_rekap_lama, df_rekap_baru], ignore_index=True))
-                            st.success("Berhasil! Data telah tersimpan ke Google Sheets.")
-                            st.balloons()
-
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    submit = st.form_submit_button("💾 **SIMPAN DATA KE DATABASE**", use_container_width=True)
+                    
+                    if submit:
+                        # Cek apakah ada yang belum diisi
+                        if any(x[4] is None for x in list_input):
+                            st.error("⚠️ Ada siswa yang belum diabsen, Bah! Cek lagi ya.")
+                        else:
+                            with st.spinner("Sedang mengirim data..."):
+                                df_rekap_baru = pd.DataFrame(list_input, columns=["nis", "nama_siswa", "tanggal", "bulan", "absensi", "nilai", "status", "prodi", "nama_guru", "mata_pelajaran"])
+                                df_rekap_lama = get_data("rekap")
+                                conn.update(spreadsheet=URL_SHEET, worksheet="rekap", data=pd.concat([df_rekap_lama, df_rekap_baru], ignore_index=True))
+                                st.success("Alhamdulillah, Data Berhasil Disimpan!")
+                                st.balloons()
+                                
     elif menu == "📊 Monitoring Harian":
         st.header("📊 Riwayat Absensi & Nilai")
         df_rekap = get_data("rekap")
@@ -205,6 +214,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
